@@ -2,7 +2,6 @@
 
 This document describes the Oracle tables and column formats used by the project. `PK` means primary key, `FK` means foreign key, and `UQ` means unique. Unless marked nullable, columns listed as `NOT NULL` must have a value. Oracle `DATE` stores both a calendar date and a time of day.
 
-The current schema has 10 tables. The old `FEE_PAYMENT` table and fee feature are not part of this version.
 
 ## HOSTEL
 
