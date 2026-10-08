@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal - HostelMS</title>
+    <style>
+        * { box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { margin: 0; min-height: 100vh; background: #f3f6fb; color: #1f2937; }
+        .shell { max-width: 1180px; margin: auto; padding: 42px 28px 60px; }
+        .hero { background: linear-gradient(120deg, #c94f08, #f28a35); color: white; border-radius: 18px; padding: 30px; margin-bottom: 22px; box-shadow: 0 10px 24px #c94f081f; }
+        .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; opacity: .85; margin-bottom: 8px; }
+        .hero h1 { font-size: clamp(26px, 4vw, 36px); margin: 0 0 8px; }
+        .hero p { margin: 0; line-height: 1.5; opacity: .92; }
+        .summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+        .summary-card, .panel { background: white; border: 1px solid #e5e7eb; border-radius: 13px; box-shadow: 0 3px 12px #11182708; }
+        .summary-card { padding: 17px 19px; }
+        .summary-label { color: #6b7280; font-size: 13px; margin-bottom: 8px; }
+        .summary-value { font-size: 20px; font-weight: bold; overflow-wrap: anywhere; }
+        .content-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        .panel { padding: 21px; min-width: 0; }
+        .panel h2 { font-size: 18px; margin: 0 0 16px; }
+        .panel.wide { grid-column: 1 / -1; }
+        .record-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+        .record { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; padding: 11px 0; border-top: 1px solid #eef0f4; line-height: 1.45; }
+        .record:first-child { border-top: 0; padding-top: 0; }
+        .record strong { display: block; font-size: 14px; }
+        .record-detail { display: block; color: #6b7280; font-size: 13px; margin-top: 3px; overflow-wrap: anywhere; }
+        .muted { color: #6b7280; font-size: 14px; }
+        .status { flex: 0 0 auto; display: inline-block; border-radius: 999px; padding: 4px 8px; font-size: 11px; font-weight: bold; background: #e5e7eb; color: #374151; }
+        .status-PENDING { background: #fef3c7; color: #92400e; }
+        .status-APPROVED, .status-RESOLVED { background: #dcfce7; color: #166534; }
+        .status-REJECTED { background: #fee2e2; color: #991b1b; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+        .field { min-width: 0; }
+        .field.wide { grid-column: 1 / -1; }
+        label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; }
+        input, select, textarea { width: 100%; padding: 10px 11px; border: 1px solid #d1d5db; border-radius: 7px; background: white; font-size: 14px; }
+        textarea { min-height: 88px; resize: vertical; }
+        .primary { margin-top: 15px; border: 0; border-radius: 8px; background: #ea6a16; color: white; font-size: 14px; font-weight: bold; padding: 11px 16px; cursor: pointer; }
+        .primary:hover { background: #c94f08; }
+        .primary:disabled { opacity: .65; cursor: wait; }
+        .notice { display: none; margin-bottom: 16px; border-radius: 8px; padding: 11px 13px; font-size: 14px; }
+        .notice.success { display: block; color: #166534; background: #dcfce7; }
+        .notice.error { display: block; color: #991b1b; background: #fee2e2; }
+        .loading { color: #6b7280; background: white; padding: 22px; border-radius: 12px; }
+        @media (max-width: 760px) { .shell { padding: 25px 15px 40px; } .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .content-grid { grid-template-columns: 1fr; } .panel.wide { grid-column: auto; } }
+        @media (max-width: 480px) { .hero { padding: 23px; } .form-grid { grid-template-columns: 1fr; } .field.wide { grid-column: auto; } .record { flex-direction: column; } }
+    </style>
+    <link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+    <main class="shell">
+        <header class="hero">
+            <div class="eyebrow">HostelMS · Student Portal</div>
+            <h1 id="welcome">Welcome</h1>
+            <p>Check your room, report a hostel issue, request leave, register a visitor, or report a concern about another hosteller.</p>
+        </header>
+        <div id="notice" class="notice" role="status"></div>
+        <section id="loading" class="loading">Loading your information…</section>
+        <div id="portal" hidden>
+            <section class="summary" aria-label="Your hostel summary">
+                <article class="summary-card"><div class="summary-label">Current room</div><div class="summary-value" id="roomSummary">—</div></article>
+                <article class="summary-card"><div class="summary-label">Open issues</div><div class="summary-value" id="issueSummary">—</div></article>
+            </section>
+            <div class="content-grid">
+                <section class="panel"><h2>My hostel issues</h2><ul id="issueList" class="record-list"></ul></section>
+                <section class="panel"><h2>My leave requests</h2><ul id="leaveList" class="record-list"></ul></section>
+                <section class="panel"><h2>My visitors</h2><ul id="visitorList" class="record-list"></ul></section>
+                <section class="panel"><h2>My reports against hostellers</h2><ul id="hostellerReportList" class="record-list"></ul></section>
+                <section class="panel"><h2>Report a hostel issue</h2>
+                    <form id="issueForm"><div class="form-grid">
+                        <div class="field"><label for="issueType">Category</label><select id="issueType" required><option value="">Choose category</option><option value="ELECTRICAL">Electrical</option><option value="PLUMBING">Plumbing</option><option value="CLEANING">Cleaning</option><option value="INTERNET">Internet</option><option value="ROOM">Room</option><option value="MESS">Mess</option><option value="OTHER">Other</option></select></div>
+                        <div class="field wide"><label for="issueDescription">What happened?</label><textarea id="issueDescription" maxlength="500" required></textarea></div>
+                    </div><button class="primary" type="submit">Send issue</button></form>
+                </section>
+                <section class="panel"><h2>Request leave</h2>
+                    <form id="leaveForm"><div class="form-grid">
+                        <div class="field"><label for="leaveFrom">From</label><input id="leaveFrom" type="date" required></div>
+                        <div class="field"><label for="leaveTo">To</label><input id="leaveTo" type="date" required></div>
+                        <div class="field wide"><label for="leaveReason">Reason</label><textarea id="leaveReason" maxlength="500" required></textarea></div>
+                    </div><button class="primary" type="submit">Send leave request</button></form>
+                </section>
+                <section class="panel"><h2>Report a hosteller</h2>
+                    <p class="muted" style="margin:-7px 0 14px;line-height:1.45">Use this for a concern about another student. Reports go to the warden for review; this is separate from hostel maintenance issues.</p>
+                    <form id="hostellerReportForm"><div class="form-grid">
+                        <div class="field wide"><label for="reportedStudent">Student</label><select id="reportedStudent" required><option value="">Choose a student</option></select></div>
+                        <div class="field"><label for="reportType">Report type</label><input id="reportType" maxlength="30" placeholder="For example: noise" required></div>
+                        <div class="field wide"><label for="reportDescription">What happened?</label><textarea id="reportDescription" maxlength="500" required></textarea></div>
+                    </div><button class="primary" type="submit">Send report to warden</button></form>
+                </section>
+                <section class="panel wide"><h2>Register a visitor</h2>
+                    <form id="visitorForm"><div class="form-grid">
+                        <div class="field"><label for="visitorName">Visitor name</label><input id="visitorName" maxlength="100" required></div>
+                        <div class="field"><label for="visitorRelationship">Relationship</label><input id="visitorRelationship" maxlength="30" placeholder="For example, parent"></div>
+                        <div class="field"><label for="visitorPhone">Visitor phone</label><input id="visitorPhone" type="tel" maxlength="15"></div>
+                        <div class="field"><label for="visitDate">Visit date</label><input id="visitDate" type="date" required></div>
+                        <div class="field"><label for="visitInTime">Expected arrival</label><input id="visitInTime" type="time"></div>
+                        <div class="field"><label for="visitOutTime">Expected departure</label><input id="visitOutTime" type="time"></div>
+                        <div class="field wide"><label for="visitPurpose">Purpose</label><input id="visitPurpose" maxlength="200"></div>
+                    </div><button class="primary" type="submit">Send visitor details</button></form>
+                </section>
+            </div>
+        </div>
+    </main>
+    <script src="/auth.js"></script>
+    <script>
+        const $ = id => document.getElementById(id);
+        let portalData;
+        const today = () => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; };
+
+        function showNotice(message, type) {
+            const box = $("notice"); box.textContent = message; box.className = `notice ${type}`;
+            clearTimeout(showNotice.timer); showNotice.timer = setTimeout(() => { box.className = "notice"; }, 5000);
+        }
+
+        function renderRecords(listId, rows, titleFor, detailFor, emptyMessage, statusIndex = -1) {
+            const list = $(listId); list.replaceChildren();
+            if (!rows.length) { const empty = document.createElement("li"); empty.className = "muted"; empty.textContent = emptyMessage; list.appendChild(empty); return; }
+            rows.forEach(row => {
+                const item = document.createElement("li"); item.className = "record";
+                const text = document.createElement("span"); const title = document.createElement("strong");
+                title.textContent = titleFor(row); text.appendChild(title);
+                const detailText = detailFor(row);
+                if (detailText) { const detail = document.createElement("span"); detail.className = "record-detail"; detail.textContent = detailText; text.appendChild(detail); }
+                item.appendChild(text);
+                if (statusIndex >= 0 && row[statusIndex]) { const status = document.createElement("span"); status.className = `status status-${String(row[statusIndex]).replaceAll(" ", "_")}`; status.textContent = row[statusIndex]; item.appendChild(status); }
+                list.appendChild(item);
+            });
+        }
+
+        function renderPortal(data) {
+            portalData = data;
+            const student = data.student;
+            $("welcome").textContent = `Hi, ${student[2]}!`;
+            $("roomSummary").textContent = data.room ? `${data.room[0]} · ${data.room[1]}` : "Not assigned";
+            $("issueSummary").textContent = data.openIssueCount;
+            renderRecords("issueList", data.complaints, row => `${row[1]} · ${row[2]}`, row => `${row[3]}${row[5] ? ` · ${row[5]}` : ""}`, "No hostel issues reported.", 4);
+            renderRecords("leaveList", data.leaves, row => `${row[1]} to ${row[2]}`, row => `${row[3]}${row[5] ? ` · Warden: ${row[5]}` : ""}`, "No leave requests yet.", 4);
+            renderRecords("visitorList", data.visitors, row => `${row[1]}${row[2] ? ` · ${row[2]}` : ""}`, row => `${row[4]}${row[7] ? ` · ${row[7]}` : ""}`, "No visitors registered.");
+            renderRecords("hostellerReportList", data.reportsAgainstHostellers, row => `${row[1]} (${row[2]}) · ${row[3]}`, row => `${row[5]} · ${row[4]}${row[7] ? ` · ${row[7]}` : ""}`, "You have not submitted any reports.", 6);
+        }
+
+        async function loadPortal() {
+            const response = await fetch("/api/student/me");
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Could not load your student portal.");
+            renderPortal(data); $("loading").hidden = true; $("portal").hidden = false;
+        }
+
+        async function submitForm(form, url, payload, successMessage) {
+            const button = form.querySelector("button[type='submit']"); button.disabled = true;
+            try {
+                const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not submit your request.");
+                form.reset(); await loadPortal(); showNotice(successMessage, "success");
+            } catch (error) { showNotice(error.message, "error"); }
+            finally { button.disabled = false; }
+        }
+
+        async function loadHostellers() {
+            const response = await fetch("/api/student/hostellers");
+            const rows = await response.json();
+            if (!response.ok) throw new Error(rows.error || "Could not load the student list.");
+            const select = $("reportedStudent");
+            select.replaceChildren(new Option("Choose a student", ""));
+            rows.forEach(row => select.add(new Option(`${row[1]} (${row[2]})`, row[0])));
+        }
+
+        $("issueForm").addEventListener("submit", event => {
+            event.preventDefault();
+            submitForm(event.currentTarget, "/api/student/complaints", { complaint_type: $("issueType").value, description: $("issueDescription").value.trim() }, "Your issue was sent to the hostel team.");
+        });
+        $("leaveForm").addEventListener("submit", event => {
+            event.preventDefault();
+            submitForm(event.currentTarget, "/api/student/leave-requests", { from_date: $("leaveFrom").value, to_date: $("leaveTo").value, reason: $("leaveReason").value.trim() }, "Your leave request was sent to the warden.");
+        });
+        $("visitorForm").addEventListener("submit", event => {
+            event.preventDefault();
+            submitForm(event.currentTarget, "/api/student/visitors", { visitor_name: $("visitorName").value.trim(), relationship: $("visitorRelationship").value.trim(), phone: $("visitorPhone").value.trim(), visit_date: $("visitDate").value, in_time: $("visitInTime").value, out_time: $("visitOutTime").value, purpose: $("visitPurpose").value.trim() }, "Visitor details were sent to the hostel team.");
+        });
+        $("hostellerReportForm").addEventListener("submit", event => {
+            event.preventDefault();
+            submitForm(event.currentTarget, "/api/student/reports-against-hostellers", { accused_student_id: Number($("reportedStudent").value), complaint_type: $("reportType").value.trim(), description: $("reportDescription").value.trim() }, "Your report was sent to the warden for review.");
+        });
+        $("leaveFrom").min = today(); $("leaveTo").min = today(); $("visitDate").min = today(); $("visitDate").value = today();
+        $("leaveFrom").addEventListener("change", () => { $("leaveTo").min = $("leaveFrom").value || today(); });
+        Promise.all([loadPortal(), loadHostellers()]).catch(error => { $("loading").textContent = error.message; showNotice(error.message, "error"); });
+    </script>
+</body>
+</html>

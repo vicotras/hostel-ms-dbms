@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Allocations - Hostel Management</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background: #f5f7fb; color: #1f2937; }
+        .sidebar { position: fixed; inset: 0 auto 0 0; width: 230px; background: #111827; color: white; padding: 25px 15px; overflow-y: auto; }
+        .logo { font-size: 22px; font-weight: bold; margin: 0 0 35px 10px; }
+        .nav-item { display: block; padding: 13px 15px; margin-bottom: 6px; border-radius: 8px; color: #d1d5db; text-decoration: none; }
+        .nav-item:hover, .nav-item.active { background: #ea6a16; color: white; }
+        .main { margin-left: 230px; padding: 35px; }
+        .header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 22px; }
+        .header h1 { font-size: 28px; } .header p { color: #6b7280; margin-top: 6px; }
+        button { cursor: pointer; border: 0; border-radius: 7px; }
+        .add-btn, .save-btn { background: #ea6a16; color: white; padding: 12px 18px; font-weight: bold; white-space: nowrap; }
+        .summary { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 14px; margin-bottom: 24px; }
+        .summary-card { background: white; padding: 17px 19px; border-radius: 11px; box-shadow: 0 2px 8px #0000000d; }
+        .summary-label { color: #6b7280; font-size: 13px; margin-bottom: 7px; } .summary-value { font-size: 25px; font-weight: bold; }
+        .section-heading { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 12px; }
+        .section-heading h2 { font-size: 19px; }
+        .section-heading p { color: #6b7280; font-size: 13px; }
+        .table-wrap { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 2px 8px #0000000d; margin-bottom: 28px; }
+        .room-filters { display: grid; grid-template-columns: minmax(190px, 2fr) repeat(3, minmax(140px, 1fr)); gap: 10px; background: white; padding: 14px; border-radius: 12px; margin: 0 0 14px; box-shadow: 0 2px 8px #0000000d; }
+        .room-filters input, .room-filters select { width: 100%; min-width: 0; padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; background: white; }
+        table { width: 100%; border-collapse: collapse; min-width: 770px; }
+        th, td { text-align: left; vertical-align: top; padding: 13px; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f9fafb; color: #6b7280; font-size: 13px; white-space: nowrap; }
+        .available { color: #166534; font-weight: bold; } .full { color: #b91c1c; font-weight: bold; }
+        .filters { display: flex; gap: 12px; background: white; padding: 16px; border-radius: 12px; margin: 0 0 14px; box-shadow: 0 2px 8px #0000000d; }
+        .filters input, .filters select { flex: 1; min-width: 0; padding: 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; }
+        .status { display: inline-block; padding: 5px 9px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .status-ACTIVE { background: #dcfce7; color: #166534; } .status-VACATED { background: #e5e7eb; color: #4b5563; }
+        .action { padding: 7px 11px; } .vacate { background: #fee2e2; color: #991b1b; }
+        .room-link { background: transparent; color: #ea6a16; padding: 2px 0; font-size: inherit; font-weight: bold; text-decoration: underline; text-underline-offset: 3px; }
+        .room-link:hover { color: #c94f08; }
+        .resident-list { list-style: none; display: grid; gap: 9px; max-height: 50vh; overflow-y: auto; }
+        .resident-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+        .resident-name { font-weight: bold; } .resident-reg { color: #6b7280; font-size: 13px; }
+        .residents-empty { background: #f9fafb; color: #6b7280; border-radius: 8px; padding: 18px; text-align: center; }
+        .empty { text-align: center; color: #6b7280; padding: 32px; }
+        .message { display: none; padding: 12px 15px; border-radius: 8px; margin-bottom: 18px; }
+        .success { background: #dcfce7; color: #166534; } .error { background: #fee2e2; color: #991b1b; }
+        .modal { display: none; position: fixed; inset: 0; z-index: 5; background: #0008; align-items: center; justify-content: center; padding: 20px; }
+        .modal-card { width: 480px; max-width: 100%; padding: 26px; border-radius: 14px; background: white; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; } .close { background: transparent; font-size: 27px; color: #6b7280; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: bold; }
+        .form-group select, .form-group input { width: 100%; padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; background: white; }
+        .hint { color: #6b7280; font-size: 12px; margin-top: 5px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; } .cancel-btn { background: #e5e7eb; padding: 11px 17px; }
+        @media (max-width: 800px) { .sidebar { width: 70px; padding: 20px 8px; } .logo { font-size: 0; margin-left: 0; } .nav-item { font-size: 0; padding: 13px 5px; text-align: center; } .nav-item::first-letter { font-size: 18px; } .main { margin-left: 70px; padding: 20px 14px; } .header { align-items: flex-start; flex-direction: column; } .summary { grid-template-columns: repeat(2, 1fr); } .filters, .room-filters { grid-template-columns: 1fr; flex-direction: column; } .section-heading { align-items: flex-start; flex-direction: column; gap: 4px; } }
+    </style>
+    <link rel="stylesheet" href="/sidebar.css">
+    <link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+        <aside class="sidebar" aria-label="Main navigation">
+        <a class="sidebar-brand" href="/" aria-label="HostelMS home"><span class="brand-mark" aria-hidden="true">H</span><span>HostelMS</span></a>
+        <nav class="sidebar-nav" aria-label="Pages">
+        <a class="nav-item" href="/" title="Dashboard"><span class="sidebar-label">Dashboard</span></a>
+        <a class="nav-item" href="/students.html" title="Students"><span class="sidebar-label">Students</span></a>
+        <a class="nav-item" href="/rooms.html" title="Rooms"><span class="sidebar-label">Rooms</span></a>
+        <a class="nav-item active" href="/room-allocations.html" title="Room Allocations" aria-current="page"><span class="sidebar-label">Room Allocations</span></a>
+        <a class="nav-item" href="/hostels.html" title="Hostels"><span class="sidebar-label">Hostels</span></a>
+        <a class="nav-item" href="/complaints.html" title="Hostel Issues"><span class="sidebar-label">Hostel Issues</span></a>
+        <a class="nav-item" href="/complaint-zones.html" title="Against Hostellers"><span class="sidebar-label">Against Hostellers</span></a>
+        <a class="nav-item" href="/leave-requests.html" title="Leave Requests"><span class="sidebar-label">Leave Requests</span></a>
+        <a class="nav-item" href="/visitors.html" title="Visitors"><span class="sidebar-label">Visitors</span></a>
+        </nav>
+    </aside>
+    <main class="main">
+        <header class="header"><div><h1>Room Allocations</h1><p>Assign students to rooms and keep track of available beds.</p></div><button class="add-btn" id="allocateButton">+ Allocate Student</button></header>
+        <div id="message" class="message" role="status"></div>
+        <section class="summary" aria-label="Room occupancy summary">
+            <div class="summary-card"><div class="summary-label">Active allocations</div><div class="summary-value" id="allocationCount">—</div></div>
+            <div class="summary-card"><div class="summary-label">Beds occupied</div><div class="summary-value" id="occupiedCount">—</div></div>
+            <div class="summary-card"><div class="summary-label">Beds available</div><div class="summary-value" id="availableCount">—</div></div>
+            <div class="summary-card"><div class="summary-label">Total capacity</div><div class="summary-value" id="capacityCount">—</div></div>
+        </section>
+        <div class="section-heading"><h2>Room Availability</h2><p>Click a room number to see its students.</p></div>
+        <div class="room-filters" role="search" aria-label="Filter rooms">
+            <input id="roomSearchInput" type="search" placeholder="Search room number, hostel, or type..." aria-label="Search rooms">
+            <select id="roomHostelFilter" aria-label="Filter by hostel"><option value="">All hostels</option></select>
+            <select id="roomFloorFilter" aria-label="Filter by floor"><option value="">All floors</option></select>
+            <select id="roomVacancyFilter" aria-label="Filter by bed availability"><option value="">All rooms</option><option value="available">Has open beds</option><option value="full">Full</option></select>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Hostel</th><th>Room</th><th>Type</th><th>Floor</th><th>Occupied</th><th>Capacity</th><th>Available Beds</th></tr></thead><tbody id="roomsTable"><tr><td class="empty" colspan="7">Loading rooms...</td></tr></tbody></table></div>
+        <div class="section-heading"><h2>Allocations</h2></div>
+        <div class="filters"><input id="searchInput" type="search" placeholder="Search student, room or hostel..."><select id="statusFilter" aria-label="Filter allocations by status"><option value="">All allocations</option><option value="ACTIVE">Active</option><option value="VACATED">Vacated</option></select></div>
+        <div class="table-wrap"><table><thead><tr><th>Student</th><th>Hostel</th><th>Room</th><th>Type</th><th>Allocated</th><th>Vacated</th><th>Status</th><th>Action</th></tr></thead><tbody id="allocationsTable"><tr><td class="empty" colspan="8">Loading allocations...</td></tr></tbody></table></div>
+    </main>
+    <div class="modal" id="allocationModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <section class="modal-card"><div class="modal-head"><h2 id="modalTitle">Allocate Student</h2><button class="close" id="closeButton" aria-label="Close">&times;</button></div>
+            <form id="allocationForm">
+                <div class="form-group"><label for="studentId">Student</label><select id="studentId" required><option value="">Select student</option></select><p class="hint">Students with an active allocation are already assigned.</p></div>
+                <div class="form-group"><label for="roomId">Room</label><select id="roomId" required><option value="">Select available room</option></select></div>
+                <div class="form-group"><label for="allocationDate">Allocation Date</label><input id="allocationDate" type="date" required></div>
+                <div class="modal-actions"><button type="button" class="cancel-btn" id="cancelButton">Cancel</button><button class="save-btn" type="submit">Allocate Room</button></div>
+            </form>
+        </section>
+    </div>
+    <div class="modal" id="residentsModal" role="dialog" aria-modal="true" aria-labelledby="residentsTitle">
+        <section class="modal-card"><div class="modal-head"><div><h2 id="residentsTitle">Students in room</h2><p id="residentsRoomDetail" class="hint"></p></div><button class="close" id="closeResidentsButton" aria-label="Close">&times;</button></div>
+            <ul class="resident-list" id="residentList"></ul>
+        </section>
+    </div>
+    <script>
+        let students = [];
+        let rooms = [];
+        let allocations = [];
+        const $ = id => document.getElementById(id);
+        const today = () => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; };
+
+        async function fetchJson(url) {
+            const response = await fetch(url);
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || `Unable to load ${url}.`);
+            return result;
+        }
+        async function loadData() {
+            try {
+                [students, rooms, allocations] = await Promise.all([fetchJson("/api/students"), fetchJson("/api/room-availability"), fetchJson("/api/allocations")]);
+                renderRooms(); renderAllocations();
+            } catch (error) {
+                $("roomsTable").innerHTML = '<tr><td class="empty" colspan="7">Unable to load room allocation data.</td></tr>';
+                $("allocationsTable").innerHTML = '<tr><td class="empty" colspan="8">Unable to load room allocation data.</td></tr>';
+                showMessage(error.message, "error");
+            }
+        }
+        function renderRooms() {
+            const active = allocations.filter(a => a[10] === "ACTIVE").length;
+            const occupied = rooms.reduce((sum, room) => sum + Number(room[5]), 0);
+            const available = rooms.reduce((sum, room) => sum + Number(room[6]), 0);
+            const capacity = rooms.reduce((sum, room) => sum + Number(room[4]), 0);
+            $("allocationCount").textContent = active;
+            $("occupiedCount").textContent = occupied;
+            $("availableCount").textContent = available;
+            $("capacityCount").textContent = capacity;
+            const table = $("roomsTable");
+            const hostelFilter = $("roomHostelFilter");
+            const floorFilter = $("roomFloorFilter");
+            const selectedHostel = hostelFilter.value;
+            const selectedFloor = floorFilter.value;
+            const hostels = [...new Set(rooms.map(room => room[1]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
+            const floors = [...new Set(rooms.map(room => room[7]).filter(value => value !== null && value !== undefined && value !== ""))].sort((a, b) => Number(a) - Number(b));
+            hostelFilter.replaceChildren(new Option("All hostels", ""), ...hostels.map(hostel => new Option(hostel, hostel)));
+            floorFilter.replaceChildren(new Option("All floors", ""), ...floors.map(floor => new Option(`Floor ${floor}`, String(floor))));
+            if (hostels.includes(selectedHostel)) hostelFilter.value = selectedHostel;
+            if (floors.some(floor => String(floor) === selectedFloor)) floorFilter.value = selectedFloor;
+            const query = $("roomSearchInput").value.trim().toLowerCase();
+            const vacancy = $("roomVacancyFilter").value;
+            const filteredRooms = rooms.filter(room => {
+                const matchesSearch = [room[1], room[2], room[3]].some(value => String(value ?? "").toLowerCase().includes(query));
+                const matchesHostel = !hostelFilter.value || String(room[1]) === hostelFilter.value;
+                const matchesFloor = !floorFilter.value || String(room[7]) === floorFilter.value;
+                const hasBeds = Number(room[6]) > 0;
+                const matchesVacancy = !vacancy || (vacancy === "available" ? hasBeds : !hasBeds);
+                return matchesSearch && matchesHostel && matchesFloor && matchesVacancy;
+            });
+            if (!filteredRooms.length) { table.innerHTML = `<tr><td class="empty" colspan="7">${rooms.length ? "No rooms match those filters." : "No rooms found."}</td></tr>`; return; }
+            table.replaceChildren(...filteredRooms.map(room => {
+                const row = document.createElement("tr");
+                const hostelCell = document.createElement("td"); hostelCell.textContent = room[1]; row.appendChild(hostelCell);
+                const roomCell = document.createElement("td");
+                const roomButton = document.createElement("button"); roomButton.type = "button"; roomButton.className = "room-link";
+                roomButton.textContent = room[2]; roomButton.setAttribute("aria-label", `View students in room ${room[2]}`);
+                roomButton.addEventListener("click", () => openResidentsModal(room)); roomCell.appendChild(roomButton); row.appendChild(roomCell);
+                [room[3], room[7] ?? "—", room[5], room[4]].forEach(value => { const td = document.createElement("td"); td.textContent = value; row.appendChild(td); });
+                const free = document.createElement("td"); free.className = Number(room[6]) > 0 ? "available" : "full"; free.textContent = room[6]; row.appendChild(free);
+                return row;
+            }));
+        }
+        function openResidentsModal(room) {
+            const residents = allocations.filter(allocation => Number(allocation[4]) === Number(room[0]) && allocation[10] === "ACTIVE");
+            $("residentsTitle").textContent = `Students in room ${room[2]}`;
+            $("residentsRoomDetail").textContent = `${room[1]} · ${room[3]} · ${residents.length} of ${room[4]} beds occupied`;
+            const list = $("residentList");
+            list.replaceChildren();
+            if (!residents.length) {
+                const empty = document.createElement("li"); empty.className = "residents-empty"; empty.textContent = "No students are currently assigned to this room."; list.appendChild(empty);
+            } else {
+                residents.forEach(allocation => {
+                    const item = document.createElement("li"); item.className = "resident-item";
+                    const name = document.createElement("span"); name.className = "resident-name"; name.textContent = allocation[3];
+                    const registration = document.createElement("span"); registration.className = "resident-reg"; registration.textContent = allocation[2];
+                    item.append(name, registration); list.appendChild(item);
+                });
+            }
+            $("residentsModal").style.display = "flex";
+        }
+        function closeResidentsModal() { $("residentsModal").style.display = "none"; }
+        function renderAllocations() {
+            const query = $("searchInput").value.trim().toLowerCase();
+            const status = $("statusFilter").value;
+            const filtered = allocations.filter(a => (!status || a[10] === status) && [a[2], a[3], a[5], a[6]].some(value => String(value ?? "").toLowerCase().includes(query)));
+            const table = $("allocationsTable");
+            if (!filtered.length) { table.innerHTML = `<tr><td class="empty" colspan="8">${allocations.length ? "No allocations match that search." : "No room allocations yet."}</td></tr>`; return; }
+            table.replaceChildren(...filtered.map(allocation => {
+                const row = document.createElement("tr");
+                [`${allocation[3]} (${allocation[2]})`, allocation[5], allocation[6], allocation[7], allocation[8], allocation[9] || "—"].forEach(value => { const td = document.createElement("td"); td.textContent = value; row.appendChild(td); });
+                const statusCell = document.createElement("td"); const badge = document.createElement("span"); badge.className = `status status-${allocation[10]}`; badge.textContent = allocation[10]; statusCell.appendChild(badge); row.appendChild(statusCell);
+                const actionCell = document.createElement("td");
+                if (allocation[10] === "ACTIVE") { const button = document.createElement("button"); button.className = "action vacate"; button.textContent = "Vacate"; button.onclick = () => vacateAllocation(allocation); actionCell.appendChild(button); }
+                else actionCell.textContent = "—";
+                row.appendChild(actionCell); return row;
+            }));
+        }
+        function populateFormOptions() {
+            const activeStudentIds = new Set(allocations.filter(a => a[10] === "ACTIVE").map(a => Number(a[1])));
+            const studentSelect = $("studentId");
+            studentSelect.replaceChildren(new Option("Select student", ""));
+            students.filter(student => !activeStudentIds.has(Number(student[0]))).forEach(student => studentSelect.add(new Option(`${student[2]} (${student[1]})`, student[0])));
+            const roomSelect = $("roomId");
+            roomSelect.replaceChildren(new Option("Select available room", ""));
+            rooms.filter(room => Number(room[6]) > 0).forEach(room => roomSelect.add(new Option(`${room[1]} · ${room[2]} · ${room[6]} bed${Number(room[6]) === 1 ? "" : "s"} free`, room[0])));
+        }
+        function openModal() { populateFormOptions(); $("allocationForm").reset(); $("allocationDate").value = today(); $("allocationModal").style.display = "flex"; }
+        function closeModal() { $("allocationModal").style.display = "none"; $("allocationForm").reset(); }
+        function showMessage(message, type) { const box = $("message"); box.textContent = message; box.className = `message ${type}`; box.style.display = "block"; clearTimeout(showMessage.timer); showMessage.timer = setTimeout(() => box.style.display = "none", 4500); }
+        $("allocationForm").addEventListener("submit", async event => {
+            event.preventDefault();
+            try {
+                const response = await fetch("/api/allocations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ student_id: Number($("studentId").value), room_id: Number($("roomId").value), allocation_date: $("allocationDate").value }) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not allocate student.");
+                closeModal(); await loadData(); showMessage("Student allocated to room successfully.", "success");
+            } catch (error) { showMessage(error.message, "error"); }
+        });
+        async function vacateAllocation(allocation) {
+            if (!confirm(`Vacate ${allocation[3]} from ${allocation[5]} room ${allocation[6]} today?`)) return;
+            try {
+                const response = await fetch(`/api/allocations/${allocation[0]}/vacate`, { method: "PUT" });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not vacate allocation.");
+                await loadData(); showMessage(result.message, "success");
+            } catch (error) { showMessage(error.message, "error"); }
+        }
+        $("allocateButton").addEventListener("click", openModal);
+        $("closeResidentsButton").addEventListener("click", closeResidentsModal);
+        $("closeButton").addEventListener("click", closeModal);
+        $("cancelButton").addEventListener("click", closeModal);
+        $("searchInput").addEventListener("input", renderAllocations);
+        $("statusFilter").addEventListener("change", renderAllocations);
+        $("roomSearchInput").addEventListener("input", renderRooms);
+        $("roomHostelFilter").addEventListener("change", renderRooms);
+        $("roomFloorFilter").addEventListener("change", renderRooms);
+        $("roomVacancyFilter").addEventListener("change", renderRooms);
+        $("allocationModal").addEventListener("click", event => { if (event.target === $("allocationModal")) closeModal(); });
+        $("residentsModal").addEventListener("click", event => { if (event.target === $("residentsModal")) closeResidentsModal(); });
+        window.addEventListener("keydown", event => { if (event.key === "Escape") { closeModal(); closeResidentsModal(); } });
+        loadData();
+    </script>
+    <script src="/auth.js"></script>
+</body>
+</html>

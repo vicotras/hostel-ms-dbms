@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Hostel Issues - Hostel Management</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background: #f5f7fb; color: #1f2937; }
+        .sidebar { position: fixed; inset: 0 auto 0 0; width: 230px; background: #111827; color: white; padding: 25px 15px; }
+        .logo { font-size: 22px; font-weight: bold; margin: 0 0 35px 10px; }
+        .nav-item { display: block; padding: 13px 15px; margin-bottom: 6px; border-radius: 8px; color: #d1d5db; text-decoration: none; }
+        .nav-item:hover, .nav-item.active { background: #ea6a16; color: white; }
+        .main { margin-left: 230px; padding: 35px; }
+        .header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 24px; }
+        .header h1 { font-size: 28px; } .header p { color: #6b7280; margin-top: 5px; }
+        button { cursor: pointer; border: 0; border-radius: 7px; }
+        .add-btn, .save-btn { background: #ea6a16; color: white; padding: 12px 18px; font-weight: bold; }
+        .filters { display: flex; gap: 12px; background: white; padding: 16px; border-radius: 12px; margin-bottom: 18px; box-shadow: 0 2px 8px #0000000d; }
+        .filters input, .filters select { flex: 1; min-width: 0; padding: 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; }
+        .table-wrap { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 2px 8px #0000000d; }
+        table { width: 100%; border-collapse: collapse; min-width: 1190px; }
+        th, td { text-align: left; vertical-align: top; padding: 13px; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f9fafb; color: #6b7280; font-size: 13px; white-space: nowrap; }
+        td.description, td.resolution { min-width: 180px; max-width: 290px; white-space: normal; line-height: 1.4; }
+        .action { padding: 7px 11px; margin: 0 5px 5px 0; } .edit { background: #ffeddc; color: #9a4310; } .delete { background: #fee2e2; color: #b91c1c; }
+        .status { display: inline-block; padding: 5px 9px; border-radius: 20px; font-size: 11px; font-weight: bold; white-space: nowrap; }
+        .status-PENDING { background: #fef3c7; color: #92400e; } .status-IN_PROGRESS { background: #ffeddc; color: #c94f08; } .status-RESOLVED { background: #dcfce7; color: #166534; } .status-REJECTED { background: #fee2e2; color: #991b1b; }
+        .empty { text-align: center; color: #6b7280; padding: 36px; }
+        .message { display: none; padding: 12px 15px; border-radius: 8px; margin-bottom: 18px; }
+        .success { background: #dcfce7; color: #166534; } .error { background: #fee2e2; color: #991b1b; }
+        .modal { display: none; position: fixed; inset: 0; z-index: 5; background: #0008; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+        .modal-card { width: 600px; max-width: 100%; padding: 26px; border-radius: 14px; background: white; margin: auto; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; } .close { background: transparent; font-size: 27px; color: #6b7280; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+        .form-group { margin-bottom: 16px; } .form-group.wide { grid-column: 1 / -1; }
+        label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; background: white; }
+        .form-group textarea { min-height: 85px; resize: vertical; }
+        .ml-suggestion { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-top: 9px; padding: 11px 12px; border: 1px solid #fed7aa; border-radius: 8px; background: #fff8f0; }
+        .ml-suggestion[hidden] { display: none; }
+        .ml-suggestion strong { display: block; color: #1e3a8a; font-size: 13px; }
+        .ml-note { display: block; color: #4b5563; font-size: 12px; margin-top: 3px; }
+        .suggestion-button { flex: 0 0 auto; background: white; color: #c94f08; border: 1px solid #f3c69f; padding: 8px 11px; font-weight: bold; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; } .cancel-btn { background: #e5e7eb; padding: 11px 17px; }
+        @media (max-width: 760px) { .sidebar { width: 70px; padding: 20px 8px; } .logo { font-size: 0; margin-left: 0; } .nav-item { font-size: 0; padding: 13px 5px; text-align: center; } .nav-item::first-letter { font-size: 18px; } .main { margin-left: 70px; padding: 20px 14px; } .header { align-items: flex-start; flex-direction: column; } .filters { flex-direction: column; } }
+        @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } .form-group.wide { grid-column: auto; } }
+    </style>
+    <link rel="stylesheet" href="/sidebar.css">
+    <link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+        <aside class="sidebar" aria-label="Main navigation">
+        <a class="sidebar-brand" href="/" aria-label="HostelMS home"><span class="brand-mark" aria-hidden="true">H</span><span>HostelMS</span></a>
+        <nav class="sidebar-nav" aria-label="Pages">
+        <a class="nav-item" href="/" title="Dashboard"><span class="sidebar-label">Dashboard</span></a>
+        <a class="nav-item" href="/students.html" title="Students"><span class="sidebar-label">Students</span></a>
+        <a class="nav-item" href="/rooms.html" title="Rooms"><span class="sidebar-label">Rooms</span></a>
+        <a class="nav-item" href="/room-allocations.html" title="Room Allocations"><span class="sidebar-label">Room Allocations</span></a>
+        <a class="nav-item" href="/hostels.html" title="Hostels"><span class="sidebar-label">Hostels</span></a>
+        <a class="nav-item active" href="/complaints.html" title="Hostel Issues" aria-current="page"><span class="sidebar-label">Hostel Issues</span></a>
+        <a class="nav-item" href="/complaint-zones.html" title="Against Hostellers"><span class="sidebar-label">Against Hostellers</span></a>
+        <a class="nav-item" href="/leave-requests.html" title="Leave Requests"><span class="sidebar-label">Leave Requests</span></a>
+        <a class="nav-item" href="/visitors.html" title="Visitors"><span class="sidebar-label">Visitors</span></a>
+        </nav>
+    </aside>
+    <main class="main">
+        <header class="header"><div><h1>Hostel Issues</h1><p>Track issues reported by students about hostel facilities</p></div><button class="add-btn" id="addButton">+ Add Issue</button></header>
+        <div id="message" class="message" role="status"></div>
+        <div class="filters"><input id="searchInput" type="search" placeholder="Search student, complaint or resolution..."><select id="statusFilter" aria-label="Filter by complaint status"><option value="">All statuses</option><option value="PENDING">Pending</option><option value="IN PROGRESS">In Progress</option><option value="RESOLVED">Resolved</option><option value="REJECTED">Rejected</option></select></div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Student</th><th>Type</th><th>Description</th><th>Date</th><th>Status</th><th>Resolution</th><th>Resolved Date</th><th>Actions</th></tr></thead><tbody id="complaintsTable"><tr><td class="empty" colspan="9">Loading complaints...</td></tr></tbody></table></div>
+    </main>
+    <div class="modal" id="complaintModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <section class="modal-card"><div class="modal-head"><h2 id="modalTitle">Add Complaint</h2><button class="close" id="closeButton" aria-label="Close">&times;</button></div>
+            <form id="complaintForm"><div class="form-grid">
+                <div class="form-group wide"><label for="studentId">Student</label><select id="studentId" required><option value="">Select student</option></select></div>
+                <div class="form-group"><label for="complaintType">Complaint Type</label><select id="complaintType" required><option value="">Select type</option><option value="ELECTRICAL">Electrical</option><option value="PLUMBING">Plumbing</option><option value="CLEANING">Cleaning</option><option value="INTERNET">Internet</option><option value="ROOM">Room</option><option value="MESS">Mess</option><option value="OTHER">Other</option></select></div>
+                <div class="form-group"><label for="complaintDate">Complaint Date</label><input id="complaintDate" type="date" required></div>
+                <div class="form-group"><label for="status">Status</label><select id="status" required><option value="PENDING">Pending</option><option value="IN PROGRESS">In Progress</option><option value="RESOLVED">Resolved</option><option value="REJECTED">Rejected</option></select></div>
+                <div class="form-group" id="resolvedDateGroup" hidden><label for="resolvedDate">Resolved Date <span style="font-weight:normal;color:#6b7280">(optional)</span></label><input id="resolvedDate" type="date"></div>
+                <div class="form-group wide"><label for="description">Description</label><textarea id="description" maxlength="500" required></textarea>
+                    <div class="ml-suggestion" id="mlSuggestion" aria-live="polite" hidden><div><strong id="mlSuggestionText"></strong><span class="ml-note">Machine learning suggestion—check it before saving.</span></div><button type="button" class="suggestion-button" id="useSuggestionButton">Use suggestion</button></div>
+                </div>
+                <div class="form-group wide"><label for="resolution">Resolution <span style="font-weight:normal;color:#6b7280">(optional)</span></label><textarea id="resolution" maxlength="500"></textarea></div>
+            </div><div class="modal-actions"><button type="button" class="cancel-btn" id="cancelButton">Cancel</button><button class="save-btn" type="submit">Save Complaint</button></div></form>
+        </section>
+    </div>
+    <script>
+        let complaints = [];
+        let currentSuggestion = null;
+        const $ = id => document.getElementById(id);
+        const today = () => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; };
+
+        // A small Multinomial Naive Bayes model trained on labeled example descriptions.
+        // It runs locally in the browser and only suggests a category; a person chooses what to save.
+        const complaintTrainingExamples = {
+            ELECTRICAL: [
+                "The light in my room stopped working",
+                "The ceiling fan is not turning on",
+                "There are sparks coming from the power socket",
+                "The switchboard and tube light need repair",
+                "Power keeps tripping in the room"
+            ],
+            PLUMBING: [
+                "Water is leaking from the bathroom tap",
+                "The sink drain is blocked and water will not go down",
+                "There is no water coming from the shower",
+                "The toilet flush and pipe are broken",
+                "A pipe is leaking near the washroom"
+            ],
+            CLEANING: [
+                "The corridor and staircase are dirty",
+                "The washroom needs cleaning",
+                "Garbage has not been collected from our floor",
+                "There are insects and rubbish in the common area",
+                "The bins are overflowing and the area smells bad"
+            ],
+            INTERNET: [
+                "The hostel wifi is not connecting",
+                "Internet is very slow in my room",
+                "The wireless network keeps disconnecting",
+                "There is no wifi signal on the second floor",
+                "The router is offline and internet is unavailable"
+            ],
+            ROOM: [
+                "The bed frame in my room is broken",
+                "My cupboard door and room lock are damaged",
+                "The window will not close properly",
+                "There is a crack in the wall of our room",
+                "The desk and chair in the room need repair"
+            ],
+            MESS: [
+                "The food served at dinner was cold",
+                "The mess meal quality has become poor",
+                "There was not enough food during lunch",
+                "The drinking water in the dining hall tastes bad",
+                "The menu and breakfast timing need attention"
+            ],
+            OTHER: [
+                "I need help with an issue not listed here",
+                "Please contact me about a general hostel concern",
+                "I have a question about hostel facilities",
+                "There is another problem that does not fit the categories",
+                "I would like to report a general concern"
+            ]
+        };
+
+        function tokenize(text) {
+            return String(text ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(/\s+/).filter(Boolean);
+        }
+
+        function trainComplaintClassifier(examples) {
+            const classes = {};
+            const vocabulary = new Set();
+            let documentCount = 0;
+            for (const [category, descriptions] of Object.entries(examples)) {
+                const wordCounts = new Map();
+                let totalWords = 0;
+                for (const description of descriptions) {
+                    documentCount++;
+                    for (const word of tokenize(description)) {
+                        vocabulary.add(word);
+                        wordCounts.set(word, (wordCounts.get(word) || 0) + 1);
+                        totalWords++;
+                    }
+                }
+                classes[category] = { documentCount: descriptions.length, totalWords, wordCounts };
+            }
+            return { classes, vocabulary, documentCount };
+        }
+
+        const complaintModel = trainComplaintClassifier(complaintTrainingExamples);
+
+        function predictComplaintCategory(text) {
+            const words = tokenize(text);
+            if (!words.length) return null;
+            const scores = Object.entries(complaintModel.classes).map(([category, model]) => {
+                let score = Math.log(model.documentCount / complaintModel.documentCount);
+                const denominator = model.totalWords + complaintModel.vocabulary.size;
+                for (const word of words) score += Math.log(((model.wordCounts.get(word) || 0) + 1) / denominator);
+                return { category, score };
+            }).sort((a, b) => b.score - a.score);
+            const maxScore = scores[0].score;
+            const total = scores.reduce((sum, item) => sum + Math.exp(item.score - maxScore), 0);
+            return { category: scores[0].category, confidence: Math.exp(scores[0].score - maxScore) / total };
+        }
+
+        function updateComplaintSuggestion() {
+            const prediction = predictComplaintCategory($("description").value);
+            currentSuggestion = prediction;
+            if (!prediction) { $("mlSuggestion").hidden = true; return; }
+            const label = prediction.category.charAt(0) + prediction.category.slice(1).toLowerCase();
+            $("mlSuggestionText").textContent = `${label} suggested · ${Math.round(prediction.confidence * 100)}% confidence`;
+            $("mlSuggestion").hidden = false;
+        }
+
+        async function loadStudents() {
+            const response = await fetch("/api/students");
+            if (!response.ok) throw new Error("Unable to load students.");
+            const students = await response.json();
+            const select = $("studentId");
+            select.replaceChildren(new Option("Select student", ""));
+            students.forEach(student => select.add(new Option(`${student[2]} (${student[1]})`, student[0])));
+        }
+        async function loadComplaints() {
+            try {
+                const response = await fetch("/api/complaints");
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Unable to load complaints.");
+                complaints = result;
+                renderComplaints();
+            } catch (error) {
+                $("complaintsTable").innerHTML = '<tr><td class="empty" colspan="9">Unable to load complaints. Check that the server and database are running.</td></tr>';
+                showMessage(error.message, "error");
+            }
+        }
+        function renderComplaints() {
+            const query = $("searchInput").value.trim().toLowerCase();
+            const status = $("statusFilter").value;
+            const filtered = complaints.filter(c => (!status || c[7] === status) && [c[2], c[3], c[5], c[8]].some(value => String(value ?? "").toLowerCase().includes(query)));
+            const table = $("complaintsTable");
+            if (!filtered.length) {
+                table.innerHTML = `<tr><td class="empty" colspan="9">${complaints.length ? "No matching complaints." : "No complaints have been recorded yet."}</td></tr>`;
+                return;
+            }
+            table.replaceChildren(...filtered.map(complaint => {
+                const row = document.createElement("tr");
+                [complaint[0], `${complaint[3]} (${complaint[2]})`, complaint[4]].forEach(value => { const td = document.createElement("td"); td.textContent = value ?? "-"; row.appendChild(td); });
+                const description = document.createElement("td"); description.className = "description"; description.textContent = complaint[5]; row.appendChild(description);
+                [complaint[6]].forEach(value => { const td = document.createElement("td"); td.textContent = value ?? "-"; row.appendChild(td); });
+                const statusCell = document.createElement("td"); const badge = document.createElement("span"); badge.className = `status status-${String(complaint[7]).replaceAll(" ", "_")}`; badge.textContent = complaint[7]; statusCell.appendChild(badge); row.appendChild(statusCell);
+                const resolution = document.createElement("td"); resolution.className = "resolution"; resolution.textContent = complaint[8] || "-"; row.appendChild(resolution);
+                const resolvedDate = document.createElement("td"); resolvedDate.textContent = complaint[9] || "-"; row.appendChild(resolvedDate);
+                const actions = document.createElement("td");
+                const edit = document.createElement("button"); edit.className = "action edit"; edit.textContent = "Edit"; edit.onclick = () => openModal(complaint);
+                const remove = document.createElement("button"); remove.className = "action delete"; remove.textContent = "Delete"; remove.onclick = () => deleteComplaint(complaint);
+                actions.append(edit, remove); row.appendChild(actions); return row;
+            }));
+        }
+        function updateResolvedDateField() { const visible = $("status").value === "RESOLVED"; $("resolvedDateGroup").hidden = !visible; if (visible && !$("resolvedDate").value) $("resolvedDate").value = today(); }
+        function openModal(complaint = null) {
+            $("modalTitle").textContent = complaint ? "Edit Complaint" : "Add Complaint";
+            $("studentId").value = complaint?.[1] ?? "";
+            $("complaintType").value = complaint?.[4] ?? "";
+            $("complaintDate").value = complaint?.[6] ?? today();
+            $("status").value = complaint?.[7] ?? "PENDING";
+            $("resolvedDate").value = complaint?.[9] ?? "";
+            $("description").value = complaint?.[5] ?? "";
+            $("resolution").value = complaint?.[8] ?? "";
+            $("complaintModal").dataset.complaintId = complaint?.[0] ?? "";
+            updateResolvedDateField();
+            updateComplaintSuggestion();
+            $("complaintModal").style.display = "flex";
+        }
+        function closeModal() { $("complaintModal").style.display = "none"; $("complaintForm").reset(); $("complaintModal").dataset.complaintId = ""; $("resolvedDateGroup").hidden = true; }
+        function showMessage(message, type) { const box = $("message"); box.textContent = message; box.className = `message ${type}`; box.style.display = "block"; clearTimeout(showMessage.timer); showMessage.timer = setTimeout(() => box.style.display = "none", 4000); }
+        $("complaintForm").addEventListener("submit", async event => {
+            event.preventDefault();
+            const id = $("complaintModal").dataset.complaintId;
+            const payload = { student_id: Number($("studentId").value), complaint_type: $("complaintType").value, description: $("description").value.trim(), complaint_date: $("complaintDate").value, status: $("status").value, resolution: $("resolution").value.trim(), resolved_date: $("resolvedDate").value };
+            try {
+                const response = await fetch(id ? `/api/complaints/${id}` : "/api/complaints", { method: id ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not save complaint.");
+                closeModal(); await loadComplaints(); showMessage(id ? "Complaint updated successfully." : "Complaint added successfully.", "success");
+            } catch (error) { showMessage(error.message, "error"); }
+        });
+        async function deleteComplaint(complaint) {
+            if (!confirm(`Delete complaint #${complaint[0]} for ${complaint[3]}?`)) return;
+            try {
+                const response = await fetch(`/api/complaints/${complaint[0]}`, { method: "DELETE" });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not delete complaint.");
+                await loadComplaints(); showMessage("Complaint deleted successfully.", "success");
+            } catch (error) { showMessage(error.message, "error"); }
+        }
+        $("addButton").addEventListener("click", () => openModal());
+        $("closeButton").addEventListener("click", closeModal);
+        $("cancelButton").addEventListener("click", closeModal);
+        $("status").addEventListener("change", updateResolvedDateField);
+        $("description").addEventListener("input", updateComplaintSuggestion);
+        $("useSuggestionButton").addEventListener("click", () => { if (currentSuggestion) $("complaintType").value = currentSuggestion.category; });
+        $("searchInput").addEventListener("input", renderComplaints);
+        $("statusFilter").addEventListener("change", renderComplaints);
+        $("complaintModal").addEventListener("click", event => { if (event.target === $("complaintModal")) closeModal(); });
+        window.addEventListener("keydown", event => { if (event.key === "Escape") closeModal(); });
+        (async () => { try { await loadStudents(); await loadComplaints(); } catch (error) { $("complaintsTable").innerHTML = '<tr><td class="empty" colspan="9">Unable to load students.</td></tr>'; showMessage(error.message, "error"); } })();
+    </script>
+    <script src="/auth.js"></script>
+</body>
+</html>

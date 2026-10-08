@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Requests - Hostel Management</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background: #f5f7fb; color: #1f2937; }
+        .sidebar { position: fixed; inset: 0 auto 0 0; width: 230px; background: #111827; color: white; padding: 25px 15px; overflow-y: auto; }
+        .logo { font-size: 22px; font-weight: bold; margin: 0 0 35px 10px; }
+        .nav-item { display: block; padding: 13px 15px; margin-bottom: 6px; border-radius: 8px; color: #d1d5db; text-decoration: none; }
+        .nav-item:hover, .nav-item.active { background: #ea6a16; color: white; }
+        .main { margin-left: 230px; padding: 35px; }
+        .header { margin-bottom: 22px; }
+        .header h1 { font-size: 28px; } .header p { color: #6b7280; margin-top: 6px; }
+        .summary { display: grid; grid-template-columns: repeat(4, minmax(125px, 1fr)); gap: 14px; margin-bottom: 18px; }
+        .summary-card { background: white; padding: 17px 19px; border-radius: 11px; box-shadow: 0 2px 8px #0000000d; }
+        .summary-label { color: #6b7280; font-size: 13px; margin-bottom: 7px; } .summary-value { font-size: 25px; font-weight: bold; }
+        .filters { display: flex; gap: 12px; background: white; padding: 16px; border-radius: 12px; margin-bottom: 18px; box-shadow: 0 2px 8px #0000000d; }
+        .filters input, .filters select { flex: 1; min-width: 0; padding: 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; }
+        .table-wrap { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 2px 8px #0000000d; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th, td { text-align: left; vertical-align: top; padding: 14px; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f9fafb; color: #6b7280; font-size: 13px; white-space: nowrap; }
+        td.reason { min-width: 220px; max-width: 340px; white-space: pre-wrap; line-height: 1.4; }
+        .status { display: inline-block; padding: 5px 9px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .status-PENDING { background: #fef3c7; color: #92400e; } .status-APPROVED { background: #dcfce7; color: #166534; } .status-REJECTED { background: #fee2e2; color: #991b1b; }
+        button { cursor: pointer; border: 0; border-radius: 7px; }
+        .review-btn { background: #ffeddc; color: #9a4310; padding: 8px 12px; }
+        .empty { text-align: center; color: #6b7280; padding: 36px; }
+        .message { display: none; padding: 12px 15px; border-radius: 8px; margin-bottom: 18px; }
+        .success { background: #dcfce7; color: #166534; } .error { background: #fee2e2; color: #991b1b; }
+        .modal { display: none; position: fixed; inset: 0; z-index: 5; background: #0008; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+        .modal-card { width: 580px; max-width: 100%; padding: 26px; border-radius: 14px; background: white; margin: auto; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; } .close { background: transparent; font-size: 27px; color: #6b7280; }
+        .details { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .detail { background: #f9fafb; padding: 12px; border-radius: 8px; } .detail.wide { grid-column: 1 / -1; }
+        .detail-label { color: #6b7280; font-size: 12px; margin-bottom: 5px; } .detail-value { white-space: pre-wrap; line-height: 1.4; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: bold; }
+        .form-group select, .form-group textarea { width: 100%; padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; background: white; }
+        .form-group textarea { min-height: 90px; resize: vertical; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .cancel-btn { background: #e5e7eb; padding: 11px 17px; } .save-btn { background: #ea6a16; color: white; padding: 11px 17px; font-weight: bold; }
+        @media (max-width: 760px) { .sidebar { width: 70px; padding: 20px 8px; } .logo { font-size: 0; margin-left: 0; } .nav-item { font-size: 0; padding: 13px 5px; text-align: center; } .nav-item::first-letter { font-size: 18px; } .main { margin-left: 70px; padding: 20px 14px; } .summary { grid-template-columns: repeat(2, 1fr); } .filters { flex-direction: column; } }
+        @media (max-width: 480px) { .details { grid-template-columns: 1fr; } .detail.wide { grid-column: auto; } }
+    </style>
+    <link rel="stylesheet" href="/sidebar.css">
+    <link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+        <aside class="sidebar" aria-label="Main navigation">
+        <a class="sidebar-brand" href="/" aria-label="HostelMS home"><span class="brand-mark" aria-hidden="true">H</span><span>HostelMS</span></a>
+        <nav class="sidebar-nav" aria-label="Pages">
+        <a class="nav-item" href="/" title="Dashboard"><span class="sidebar-label">Dashboard</span></a>
+        <a class="nav-item" href="/students.html" title="Students"><span class="sidebar-label">Students</span></a>
+        <a class="nav-item" href="/rooms.html" title="Rooms"><span class="sidebar-label">Rooms</span></a>
+        <a class="nav-item" href="/room-allocations.html" title="Room Allocations"><span class="sidebar-label">Room Allocations</span></a>
+        <a class="nav-item" href="/hostels.html" title="Hostels"><span class="sidebar-label">Hostels</span></a>
+        <a class="nav-item" href="/complaints.html" title="Hostel Issues"><span class="sidebar-label">Hostel Issues</span></a>
+        <a class="nav-item" href="/complaint-zones.html" title="Against Hostellers"><span class="sidebar-label">Against Hostellers</span></a>
+        <a class="nav-item active" href="/leave-requests.html" title="Leave Requests" aria-current="page"><span class="sidebar-label">Leave Requests</span></a>
+        <a class="nav-item" href="/visitors.html" title="Visitors"><span class="sidebar-label">Visitors</span></a>
+        </nav>
+    </aside>
+    <main class="main">
+        <header class="header"><h1>Leave Requests</h1><p>Review student dates and reasons, then approve or reject each request.</p></header>
+        <div id="message" class="message" role="status"></div>
+        <section class="summary" aria-label="Leave request counts">
+            <div class="summary-card"><div class="summary-label">All requests</div><div class="summary-value" id="allCount">—</div></div>
+            <div class="summary-card"><div class="summary-label">Pending</div><div class="summary-value" id="pendingCount">—</div></div>
+            <div class="summary-card"><div class="summary-label">Approved</div><div class="summary-value" id="approvedCount">—</div></div>
+            <div class="summary-card"><div class="summary-label">Rejected</div><div class="summary-value" id="rejectedCount">—</div></div>
+        </section>
+        <div class="filters"><input id="searchInput" type="search" placeholder="Search student, registration number or reason..."><select id="statusFilter" aria-label="Filter leave requests by status"><option value="">All statuses</option><option value="PENDING">Pending</option><option value="APPROVED">Approved</option><option value="REJECTED">Rejected</option></select></div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Student</th><th>Leave Dates</th><th>Reason</th><th>Applied</th><th>Status</th><th>Action</th></tr></thead><tbody id="requestsTable"><tr><td class="empty" colspan="7">Loading leave requests...</td></tr></tbody></table></div>
+    </main>
+    <div class="modal" id="reviewModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <section class="modal-card"><div class="modal-head"><h2 id="modalTitle">Review Leave Request</h2><button class="close" id="closeButton" aria-label="Close">&times;</button></div>
+            <div class="details">
+                <div class="detail"><div class="detail-label">Student</div><div class="detail-value" id="studentDetails"></div></div>
+                <div class="detail"><div class="detail-label">Phone</div><div class="detail-value" id="phoneDetails"></div></div>
+                <div class="detail"><div class="detail-label">Leave dates</div><div class="detail-value" id="dateDetails"></div></div>
+                <div class="detail"><div class="detail-label">Applied</div><div class="detail-value" id="appliedDetails"></div></div>
+                <div class="detail wide"><div class="detail-label">Reason</div><div class="detail-value" id="reasonDetails"></div></div>
+            </div>
+            <form id="reviewForm"><div class="form-group"><label for="decision">Decision</label><select id="decision" required><option value="PENDING">Pending</option><option value="APPROVED">Approve</option><option value="REJECTED">Reject</option></select></div>
+                <div class="form-group"><label for="remarks">Remarks <span style="font-weight:normal;color:#6b7280">(optional, up to 500 characters)</span></label><textarea id="remarks" maxlength="500"></textarea></div>
+                <div class="modal-actions"><button type="button" class="cancel-btn" id="cancelButton">Cancel</button><button class="save-btn" type="submit">Save Decision</button></div>
+            </form>
+        </section>
+    </div>
+    <script>
+        let requests = [];
+        let currentRequest = null;
+        const $ = id => document.getElementById(id);
+
+        async function loadRequests() {
+            try {
+                const response = await fetch("/api/leave-requests");
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Unable to load leave requests.");
+                requests = result;
+                renderRequests();
+            } catch (error) {
+                $("requestsTable").innerHTML = '<tr><td class="empty" colspan="7">Unable to load leave requests. Check that the server and database are running.</td></tr>';
+                showMessage(error.message, "error");
+            }
+        }
+        function renderRequests() {
+            $("allCount").textContent = requests.length;
+            $("pendingCount").textContent = requests.filter(r => r[8] === "PENDING").length;
+            $("approvedCount").textContent = requests.filter(r => r[8] === "APPROVED").length;
+            $("rejectedCount").textContent = requests.filter(r => r[8] === "REJECTED").length;
+            const query = $("searchInput").value.trim().toLowerCase();
+            const status = $("statusFilter").value;
+            const filtered = requests.filter(r => (!status || r[8] === status) && [r[2], r[3], r[7]].some(value => String(value ?? "").toLowerCase().includes(query)));
+            const table = $("requestsTable");
+            if (!filtered.length) { table.innerHTML = `<tr><td class="empty" colspan="7">${requests.length ? "No matching requests." : "There are no leave requests yet."}</td></tr>`; return; }
+            table.replaceChildren(...filtered.map(request => {
+                const row = document.createElement("tr");
+                [request[0], `${request[3]} (${request[2]})`, `${request[5]} to ${request[6]}`].forEach(value => { const td = document.createElement("td"); td.textContent = value; row.appendChild(td); });
+                const reason = document.createElement("td"); reason.className = "reason"; reason.textContent = request[7]; row.appendChild(reason);
+                [request[9]].forEach(value => { const td = document.createElement("td"); td.textContent = value; row.appendChild(td); });
+                const statusCell = document.createElement("td"); const badge = document.createElement("span"); badge.className = `status status-${request[8]}`; badge.textContent = request[8]; statusCell.appendChild(badge); row.appendChild(statusCell);
+                const actionCell = document.createElement("td"); const button = document.createElement("button"); button.className = "review-btn"; button.textContent = request[8] === "PENDING" ? "Review" : "View / Edit"; button.onclick = () => openReview(request); actionCell.appendChild(button); row.appendChild(actionCell);
+                return row;
+            }));
+        }
+        function openReview(request) {
+            currentRequest = request;
+            $("studentDetails").textContent = `${request[3]} (${request[2]})`;
+            $("phoneDetails").textContent = request[4] || "—";
+            $("dateDetails").textContent = `${request[5]} to ${request[6]}`;
+            $("appliedDetails").textContent = request[9];
+            $("reasonDetails").textContent = request[7];
+            $("decision").value = request[8];
+            $("remarks").value = request[10] || "";
+            $("reviewModal").style.display = "flex";
+        }
+        function closeModal() { $("reviewModal").style.display = "none"; $("reviewForm").reset(); currentRequest = null; }
+        function showMessage(message, type) { const box = $("message"); box.textContent = message; box.className = `message ${type}`; box.style.display = "block"; clearTimeout(showMessage.timer); showMessage.timer = setTimeout(() => box.style.display = "none", 4500); }
+        $("reviewForm").addEventListener("submit", async event => {
+            event.preventDefault();
+            if (!currentRequest) return;
+            try {
+                const response = await fetch(`/api/leave-requests/${currentRequest[0]}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: $("decision").value, remarks: $("remarks").value.trim() }) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not update leave request.");
+                closeModal(); await loadRequests(); showMessage(result.message, "success");
+            } catch (error) { showMessage(error.message, "error"); }
+        });
+        $("searchInput").addEventListener("input", renderRequests);
+        $("statusFilter").addEventListener("change", renderRequests);
+        $("closeButton").addEventListener("click", closeModal);
+        $("cancelButton").addEventListener("click", closeModal);
+        $("reviewModal").addEventListener("click", event => { if (event.target === $("reviewModal")) closeModal(); });
+        window.addEventListener("keydown", event => { if (event.key === "Escape") closeModal(); });
+        loadRequests();
+    </script>
+    <script src="/auth.js"></script>
+</body>
+</html>

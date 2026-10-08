@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rooms - Hostel Management System</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #111827;
+            color: white;
+            padding: 25px 15px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 22px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            padding: 13px 15px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background: #1f2937;
+            color: white;
+        }
+
+        .sidebar a.active {
+            background: #ea6a16;
+            color: white;
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            margin-left: 240px;
+            padding: 35px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+        }
+
+        .header p {
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        .add-btn {
+            background: #ea6a16;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .add-btn:hover {
+            background: #c94f08;
+        }
+
+        /* SEARCH */
+        .search-box {
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: #ea6a16;
+        }
+
+        /* TABLE */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f9fafb;
+            text-align: left;
+            padding: 15px;
+            font-size: 13px;
+            color: #6b7280;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .room-type {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #ffeddc;
+            color: #c94f08;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .action-btn {
+            border: none;
+            padding: 7px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .edit-btn {
+            background: #ffeddc;
+            color: #9a4310;
+        }
+
+        .delete-btn {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            width: 500px;
+            max-width: 90%;
+            border-radius: 14px;
+            padding: 28px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            font-size: 21px;
+        }
+
+        .close {
+            font-size: 25px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .close:hover {
+            color: #111827;
+        }
+
+        .form-group {
+            margin-bottom: 17px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 7px;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            font-size: 14px;
+            outline: none;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #ea6a16;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .cancel-btn {
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            padding: 11px 18px;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+
+        .save-btn {
+            background: #ea6a16;
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            background: #c94f08;
+        }
+
+        /* MESSAGE */
+        .message {
+            display: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        @media (max-width: 800px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .main {
+                margin-left: 200px;
+                padding: 20px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/sidebar.css">
+    <link rel="stylesheet" href="/theme.css">
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+        <aside class="sidebar" aria-label="Main navigation">
+        <a class="sidebar-brand" href="/" aria-label="HostelMS home"><span class="brand-mark" aria-hidden="true">H</span><span>HostelMS</span></a>
+        <nav class="sidebar-nav" aria-label="Pages">
+        <a class="nav-item" href="/" title="Dashboard"><span class="sidebar-label">Dashboard</span></a>
+        <a class="nav-item" href="/students.html" title="Students"><span class="sidebar-label">Students</span></a>
+        <a class="nav-item active" href="/rooms.html" title="Rooms" aria-current="page"><span class="sidebar-label">Rooms</span></a>
+        <a class="nav-item" href="/room-allocations.html" title="Room Allocations"><span class="sidebar-label">Room Allocations</span></a>
+        <a class="nav-item" href="/hostels.html" title="Hostels"><span class="sidebar-label">Hostels</span></a>
+        <a class="nav-item" href="/complaints.html" title="Hostel Issues"><span class="sidebar-label">Hostel Issues</span></a>
+        <a class="nav-item" href="/complaint-zones.html" title="Against Hostellers"><span class="sidebar-label">Against Hostellers</span></a>
+        <a class="nav-item" href="/leave-requests.html" title="Leave Requests"><span class="sidebar-label">Leave Requests</span></a>
+        <a class="nav-item" href="/visitors.html" title="Visitors"><span class="sidebar-label">Visitors</span></a>
+        </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <div class="header">
+            <div>
+                <h1>Rooms</h1>
+                <p>Manage hostel rooms and room allocations</p>
+            </div>
+
+            <button class="add-btn" onclick="openAddModal()">
+                + Add Room
+            </button>
+        </div>
+
+        <!-- MESSAGE -->
+        <div id="message" class="message"></div>
+
+        <!-- SEARCH -->
+        <div class="search-box">
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Search by room number, hostel or room type..."
+                onkeyup="searchRooms()"
+            >
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-container">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hostel</th>
+                        <th>Room Number</th>
+                        <th>Type</th>
+                        <th>Capacity</th>
+                        <th>Floor</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="roomsTable">
+                    <tr>
+                        <td colspan="7" class="empty">
+                            Loading rooms...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- ADD / EDIT MODAL -->
+    <div class="modal" id="roomModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Room</h2>
+
+                <span class="close" onclick="closeModal()">
+                    &times;
+                </span>
+            </div>
+
+            <form id="roomForm">
+
+                <input type="hidden" id="roomId">
+
+                <!-- HOSTEL -->
+                <div class="form-group">
+                    <label for="hostelId">Hostel</label>
+
+                    <select id="hostelId" required>
+                        <option value="">Select Hostel</option>
+                    </select>
+                </div>
+
+                <!-- ROOM NUMBER -->
+                <div class="form-group">
+                    <label for="roomNumber">Room Number</label>
+
+                    <input
+                        type="text"
+                        id="roomNumber"
+                        placeholder="Example: B101"
+                        required
+                    >
+                </div>
+
+                <!-- TYPE + CAPACITY -->
+                <div class="form-row">
+
+                    <div class="form-group">
+                        <label for="roomType">Room Type</label>
+
+                        <select id="roomType" required>
+                            <option value="">Select Type</option>
+                            <option value="AC">AC</option>
+                            <option value="NON-AC">Non-AC</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="capacity">Capacity</label>
+
+                        <select id="capacity" required>
+                            <option value="">Select Capacity</option>
+                            <option value="1">1 Person</option>
+                            <option value="2">2 People</option>
+                            <option value="3">3 People</option>
+                            <option value="4">4 People</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <!-- FLOOR -->
+                <div class="form-group">
+                    <label for="floorNumber">Floor Number</label>
+
+                    <input
+                        type="number"
+                        id="floorNumber"
+                        min="0"
+                        placeholder="Example: 1"
+                        required
+                    >
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="cancel-btn"
+                        onclick="closeModal()"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="save-btn"
+                    >
+                        Save Room
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        let rooms = [];
+        let editingRoomId = null;
+
+
+        // ==========================================
+        // LOAD HOSTELS
+        // ==========================================
+
+        async function loadHostels() {
+
+            try {
+
+                const response = await fetch("/api/hostels");
+
+                if (!response.ok) {
+                    throw new Error("Failed to load hostels");
+                }
+
+                const data = await response.json();
+
+                const hostelSelect =
+                    document.getElementById("hostelId");
+
+                hostelSelect.innerHTML =
+                    '<option value="">Select Hostel</option>';
+
+                data.forEach(hostel => {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value = hostel[0];
+
+                    option.textContent =
+                        `${hostel[1]} (${hostel[2]})`;
+
+                    hostelSelect.appendChild(option);
+
+                });
+
+            } catch (error) {
+
+                console.error(error);
+
+                showMessage(
+                    "Unable to load hostels.",
+                    "error"
+                );
+            }
+        }
+
+
+        // ==========================================
+        // LOAD ROOMS
+        // ==========================================
+
+        async function loadRooms() {
+
+            try {
+
+                const response =
+                    await fetch("/api/rooms");
+
+                if (!response.ok) {
+                    throw new Error("Failed to load rooms");
+                }
+
+                rooms = await response.json();
+
+                displayRooms(rooms);
+
+            } catch (error) {
+
+                console.error(error);
+
+                document.getElementById("roomsTable").innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty">
+                            Unable to load rooms.
+                        </td>
+                    </tr>
+                `;
+
+                showMessage(
+                    "Unable to load rooms.",
+                    "error"
+                );
+            }
+        }
+
+
+        // ==========================================
+        // DISPLAY ROOMS
+        // ==========================================
+
+        function displayRooms(data) {
+
+            const table =
+                document.getElementById("roomsTable");
+
+            if (data.length === 0) {
+
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty">
+                            No rooms found.
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+            table.innerHTML = "";
+
+            data.forEach(room => {
+
+                const row =
+                    document.createElement("tr");
+
+                row.innerHTML = `
+
+                    <td>${room[0]}</td>
+
+                    <td>${room[1]}</td>
+
+                    <td>
+                        <strong>${room[2]}</strong>
+                    </td>
+
+                    <td>
+                        <span class="room-type">
+                            ${room[3]}
+                        </span>
+                    </td>
+
+                    <td>
+                        ${room[4]}
+                    </td>
+
+                    <td>
+                        ${room[5] ?? "-"}
+                    </td>
+
+                    <td>
+
+                        <button
+                            class="action-btn edit-btn"
+                            onclick="editRoom(${room[0]})"
+                        >
+                            Edit
+                        </button>
+
+                        <button
+                            class="action-btn delete-btn"
+                            onclick="deleteRoom(${room[0]})"
+                        >
+                            Delete
+                        </button>
+
+                    </td>
+                `;
+
+                table.appendChild(row);
+
+            });
+        }
+
+
+        // ==========================================
+        // SEARCH
+        // ==========================================
+
+        function searchRooms() {
+
+            const search =
+                document
+                    .getElementById("searchInput")
+                    .value
+                    .toLowerCase();
+
+            const filtered =
+                rooms.filter(room => {
+
+                    return (
+                        String(room[0])
+                            .toLowerCase()
+                            .includes(search) ||
+
+                        String(room[1])
+                            .toLowerCase()
+                            .includes(search) ||
+
+                        String(room[2])
+                            .toLowerCase()
+                            .includes(search) ||
+
+                        String(room[3])
+                            .toLowerCase()
+                            .includes(search)
+                    );
+
+                });
+
+            displayRooms(filtered);
+        }
+
+
+        // ==========================================
+        // OPEN ADD MODAL
+        // ==========================================
+
+        function openAddModal() {
+
+            editingRoomId = null;
+
+            document.getElementById("modalTitle")
+                .textContent = "Add Room";
+
+            document.getElementById("roomForm")
+                .reset();
+
+            document.getElementById("roomId")
+                .value = "";
+
+            document.getElementById("roomModal")
+                .style.display = "flex";
+        }
+
+
+        // ==========================================
+        // EDIT ROOM
+        // ==========================================
+
+        function editRoom(id) {
+
+            const room =
+                rooms.find(r => Number(r[0]) === Number(id));
+
+            if (!room) {
+                return;
+            }
+
+            editingRoomId = id;
+
+            document.getElementById("modalTitle")
+                .textContent = "Edit Room";
+
+            document.getElementById("roomId")
+                .value = room[0];
+
+            document.getElementById("hostelId")
+                .value = room[6];
+
+            document.getElementById("roomNumber")
+                .value = room[2];
+
+            document.getElementById("roomType")
+                .value = room[3];
+
+            document.getElementById("capacity")
+                .value = room[4];
+
+            document.getElementById("floorNumber")
+                .value = room[5];
+
+            document.getElementById("roomModal")
+                .style.display = "flex";
+        }
+
+
+        // ==========================================
+        // CLOSE MODAL
+        // ==========================================
+
+        function closeModal() {
+
+            document.getElementById("roomModal")
+                .style.display = "none";
+
+            document.getElementById("roomForm")
+                .reset();
+
+            editingRoomId = null;
+        }
+
+
+        // ==========================================
+        // SAVE ROOM
+        // ==========================================
+
+        document
+            .getElementById("roomForm")
+            .addEventListener("submit", async function(event) {
+
+                event.preventDefault();
+
+                const roomData = {
+
+                    hostel_id:
+                        Number(
+                            document.getElementById("hostelId").value
+                        ),
+
+                    room_number:
+                        document
+                            .getElementById("roomNumber")
+                            .value
+                            .trim(),
+
+                    room_type:
+                        document
+                            .getElementById("roomType")
+                            .value,
+
+                    capacity:
+                        Number(
+                            document.getElementById("capacity").value
+                        ),
+
+                    floor_number:
+                        Number(
+                            document.getElementById("floorNumber").value
+                        )
+                };
+
+
+                try {
+
+                    let response;
+
+                    if (editingRoomId) {
+
+                        response = await fetch(
+                            `/api/rooms/${editingRoomId}`,
+                            {
+                                method: "PUT",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify(roomData)
+                            }
+                        );
+
+                    } else {
+
+                        response = await fetch(
+                            "/api/rooms",
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify(roomData)
+                            }
+                        );
+                    }
+
+
+                    const result =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            result.error ||
+                            "Failed to save room"
+                        );
+                    }
+
+
+                    closeModal();
+
+                    await loadRooms();
+
+                    showMessage(
+                        editingRoomId
+                            ? "Room updated successfully."
+                            : "Room added successfully.",
+                        "success"
+                    );
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    showMessage(
+                        error.message,
+                        "error"
+                    );
+                }
+
+            });
+
+
+        // ==========================================
+        // DELETE ROOM
+        // ==========================================
+
+        async function deleteRoom(id) {
+
+            const room =
+                rooms.find(r => Number(r[0]) === Number(id));
+
+            if (!room) {
+                return;
+            }
+
+            const confirmed =
+                confirm(
+                    `Are you sure you want to delete room ${room[2]}?`
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/rooms/${id}`,
+                        {
+                            method: "DELETE"
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.error ||
+                        "Failed to delete room"
+                    );
+                }
+
+
+                await loadRooms();
+
+                showMessage(
+                    "Room deleted successfully.",
+                    "success"
+                );
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                showMessage(
+                    error.message,
+                    "error"
+                );
+            }
+        }
+
+
+        // ==========================================
+        // SHOW MESSAGE
+        // ==========================================
+
+        function showMessage(message, type) {
+
+            const messageBox =
+                document.getElementById("message");
+
+            messageBox.textContent = message;
+
+            messageBox.className =
+                `message ${type}`;
+
+            messageBox.style.display = "block";
+
+
+            setTimeout(() => {
+
+                messageBox.style.display = "none";
+
+            }, 3500);
+        }
+
+
+        // ==========================================
+        // CLOSE MODAL WHEN CLICKING OUTSIDE
+        // ==========================================
+
+        window.addEventListener("click", function(event) {
+
+            const modal =
+                document.getElementById("roomModal");
+
+            if (event.target === modal) {
+                closeModal();
+            }
+
+        });
+
+
+        // ==========================================
+        // INITIAL LOAD
+        // ==========================================
+
+        loadHostels();
+        loadRooms();
+
+    </script>
+
+    <script src="/auth.js"></script>
+</body>
+</html>

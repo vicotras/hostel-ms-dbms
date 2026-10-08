@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitors - Hostel Management</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background: #f5f7fb; color: #1f2937; }
+        .sidebar { position: fixed; inset: 0 auto 0 0; width: 230px; background: #111827; color: white; padding: 25px 15px; overflow-y: auto; }
+        .logo { font-size: 22px; font-weight: bold; margin: 0 0 35px 10px; }
+        .nav-item { display: block; padding: 13px 15px; margin-bottom: 6px; border-radius: 8px; color: #d1d5db; text-decoration: none; }
+        .nav-item:hover, .nav-item.active { background: #ea6a16; color: white; }
+        .main { margin-left: 230px; padding: 35px; }
+        .header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 22px; }
+        .header h1 { font-size: 28px; } .header p { color: #6b7280; margin-top: 6px; }
+        button { cursor: pointer; border: 0; border-radius: 7px; }
+        .add-btn, .save-btn { background: #ea6a16; color: white; padding: 12px 18px; font-weight: bold; white-space: nowrap; }
+        .summary { display: grid; grid-template-columns: repeat(3, minmax(140px, 1fr)); gap: 14px; margin-bottom: 18px; }
+        .summary-card { background: white; padding: 17px 19px; border-radius: 11px; box-shadow: 0 2px 8px #0000000d; }
+        .summary-label { color: #6b7280; font-size: 13px; margin-bottom: 7px; } .summary-value { font-size: 25px; font-weight: bold; }
+        .filters { display: flex; gap: 12px; background: white; padding: 16px; border-radius: 12px; margin-bottom: 18px; box-shadow: 0 2px 8px #0000000d; }
+        .filters input { flex: 1; min-width: 0; padding: 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; }
+        .table-wrap { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 2px 8px #0000000d; }
+        table { width: 100%; border-collapse: collapse; min-width: 1150px; }
+        th, td { text-align: left; vertical-align: top; padding: 13px; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f9fafb; color: #6b7280; font-size: 13px; white-space: nowrap; }
+        td.purpose { min-width: 160px; max-width: 260px; white-space: pre-wrap; line-height: 1.4; }
+        .action { padding: 7px 10px; margin: 0 5px 5px 0; } .edit { background: #ffeddc; color: #9a4310; } .delete { background: #fee2e2; color: #b91c1c; }
+        .empty { text-align: center; color: #6b7280; padding: 36px; }
+        .message { display: none; padding: 12px 15px; border-radius: 8px; margin-bottom: 18px; }
+        .success { background: #dcfce7; color: #166534; } .error { background: #fee2e2; color: #991b1b; }
+        .modal { display: none; position: fixed; inset: 0; z-index: 5; background: #0008; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+        .modal-card { width: 600px; max-width: 100%; padding: 26px; border-radius: 14px; background: white; margin: auto; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; } .close { background: transparent; font-size: 27px; color: #6b7280; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+        .form-group { margin-bottom: 16px; } .form-group.wide { grid-column: 1 / -1; }
+        label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; background: white; }
+        .form-group textarea { min-height: 75px; resize: vertical; }
+        .hint { color: #6b7280; font-size: 12px; margin-top: 5px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; } .cancel-btn { background: #e5e7eb; padding: 11px 17px; }
+        @media (max-width: 760px) { .sidebar { width: 70px; padding: 20px 8px; } .logo { font-size: 0; margin-left: 0; } .nav-item { font-size: 0; padding: 13px 5px; text-align: center; } .nav-item::first-letter { font-size: 18px; } .main { margin-left: 70px; padding: 20px 14px; } .header { align-items: flex-start; flex-direction: column; } .summary { grid-template-columns: 1fr; } .filters { flex-direction: column; } }
+        @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } .form-group.wide { grid-column: auto; } }
+    </style>
+    <link rel="stylesheet" href="/sidebar.css">
+    <link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+        <aside class="sidebar" aria-label="Main navigation">
+        <a class="sidebar-brand" href="/" aria-label="HostelMS home"><span class="brand-mark" aria-hidden="true">H</span><span>HostelMS</span></a>
+        <nav class="sidebar-nav" aria-label="Pages">
+        <a class="nav-item" href="/" title="Dashboard"><span class="sidebar-label">Dashboard</span></a>
+        <a class="nav-item" href="/students.html" title="Students"><span class="sidebar-label">Students</span></a>
+        <a class="nav-item" href="/rooms.html" title="Rooms"><span class="sidebar-label">Rooms</span></a>
+        <a class="nav-item" href="/room-allocations.html" title="Room Allocations"><span class="sidebar-label">Room Allocations</span></a>
+        <a class="nav-item" href="/hostels.html" title="Hostels"><span class="sidebar-label">Hostels</span></a>
+        <a class="nav-item" href="/complaints.html" title="Hostel Issues"><span class="sidebar-label">Hostel Issues</span></a>
+        <a class="nav-item" href="/complaint-zones.html" title="Against Hostellers"><span class="sidebar-label">Against Hostellers</span></a>
+        <a class="nav-item" href="/leave-requests.html" title="Leave Requests"><span class="sidebar-label">Leave Requests</span></a>
+        <a class="nav-item active" href="/visitors.html" title="Visitors" aria-current="page"><span class="sidebar-label">Visitors</span></a>
+        </nav>
+    </aside>
+    <main class="main">
+        <header class="header"><div><h1>Visitor Log</h1><p>Record and review visits to hostel residents.</p></div><button class="add-btn" id="addButton">+ Add Visitor</button></header>
+        <div id="message" class="message" role="status"></div>
+        <section class="summary" aria-label="Visitor counts">
+            <div class="summary-card"><div class="summary-label">All visitor entries</div><div class="summary-value" id="totalCount">—</div></div>
+            <div class="summary-card"><div class="summary-label">Visits today</div><div class="summary-value" id="todayCount">—</div></div>
+            <div class="summary-card"><div class="summary-label">Currently checked in</div><div class="summary-value" id="insideCount">—</div></div>
+        </section>
+        <div class="filters"><input id="searchInput" type="search" placeholder="Search visitor, student, phone or purpose..."><input id="dateFilter" type="date" aria-label="Filter visits by date"></div>
+        <div class="table-wrap"><table><thead><tr><th>Visitor</th><th>Visiting Student</th><th>Relationship</th><th>Phone</th><th>Visit Date</th><th>In Time</th><th>Out Time</th><th>Purpose</th><th>Actions</th></tr></thead><tbody id="visitorsTable"><tr><td class="empty" colspan="9">Loading visitors...</td></tr></tbody></table></div>
+    </main>
+    <div class="modal" id="visitorModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <section class="modal-card"><div class="modal-head"><h2 id="modalTitle">Add Visitor Entry</h2><button class="close" id="closeButton" aria-label="Close">&times;</button></div>
+            <form id="visitorForm"><div class="form-grid">
+                <div class="form-group wide"><label for="studentId">Visiting Student</label><select id="studentId" required><option value="">Select student</option></select></div>
+                <div class="form-group"><label for="visitorName">Visitor Name</label><input id="visitorName" maxlength="100" required></div>
+                <div class="form-group"><label for="relationship">Relationship <span style="font-weight:normal;color:#6b7280">(optional)</span></label><input id="relationship" maxlength="30" placeholder="e.g. Parent"></div>
+                <div class="form-group"><label for="phone">Phone <span style="font-weight:normal;color:#6b7280">(optional)</span></label><input id="phone" maxlength="15" inputmode="tel"></div>
+                <div class="form-group"><label for="visitDate">Visit Date</label><input id="visitDate" type="date" required></div>
+                <div class="form-group"><label for="inTime">In Time <span style="font-weight:normal;color:#6b7280">(optional)</span></label><input id="inTime" maxlength="10" placeholder="09:30 AM"><div class="hint">Use the time format your log normally uses.</div></div>
+                <div class="form-group"><label for="outTime">Out Time <span style="font-weight:normal;color:#6b7280">(optional)</span></label><input id="outTime" maxlength="10" placeholder="10:30 AM"></div>
+                <div class="form-group wide"><label for="purpose">Purpose <span style="font-weight:normal;color:#6b7280">(optional)</span></label><textarea id="purpose" maxlength="200"></textarea></div>
+            </div><div class="modal-actions"><button type="button" class="cancel-btn" id="cancelButton">Cancel</button><button class="save-btn" type="submit">Save Entry</button></div></form>
+        </section>
+    </div>
+    <script>
+        let visitors = [];
+        let editingVisitorId = null;
+        const $ = id => document.getElementById(id);
+        const today = () => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; };
+
+        async function loadStudents() {
+            const response = await fetch("/api/students");
+            if (!response.ok) throw new Error("Unable to load students.");
+            const students = await response.json();
+            const select = $("studentId");
+            select.replaceChildren(new Option("Select student", ""));
+            students.forEach(student => select.add(new Option(`${student[2]} (${student[1]})`, student[0])));
+        }
+        async function loadVisitors() {
+            try {
+                const response = await fetch("/api/visitors");
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Unable to load visitor entries.");
+                visitors = result;
+                renderVisitors();
+            } catch (error) {
+                $("visitorsTable").innerHTML = '<tr><td class="empty" colspan="9">Unable to load visitors. Check that the server and database are running.</td></tr>';
+                showMessage(error.message, "error");
+            }
+        }
+        function renderVisitors() {
+            const currentDate = today();
+            $("totalCount").textContent = visitors.length;
+            $("todayCount").textContent = visitors.filter(v => v[7] === currentDate).length;
+            $("insideCount").textContent = visitors.filter(v => v[7] === currentDate && v[8] && !v[9]).length;
+            const query = $("searchInput").value.trim().toLowerCase();
+            const date = $("dateFilter").value;
+            const filtered = visitors.filter(v => (!date || v[7] === date) && [v[2], v[3], v[4], v[5], v[6], v[10]].some(value => String(value ?? "").toLowerCase().includes(query)));
+            const table = $("visitorsTable");
+            if (!filtered.length) { table.innerHTML = `<tr><td class="empty" colspan="9">${visitors.length ? "No visitor entries match those filters." : "No visitor entries have been added yet."}</td></tr>`; return; }
+            table.replaceChildren(...filtered.map(visitor => {
+                const row = document.createElement("tr");
+                [visitor[4], `${visitor[3]} (${visitor[2]})`, visitor[5] || "—", visitor[6] || "—", visitor[7], visitor[8] || "—", visitor[9] || "—"].forEach(value => { const td = document.createElement("td"); td.textContent = value; row.appendChild(td); });
+                const purpose = document.createElement("td"); purpose.className = "purpose"; purpose.textContent = visitor[10] || "—"; row.appendChild(purpose);
+                const actions = document.createElement("td");
+                const edit = document.createElement("button"); edit.className = "action edit"; edit.textContent = "Edit"; edit.onclick = () => openModal(visitor);
+                const remove = document.createElement("button"); remove.className = "action delete"; remove.textContent = "Delete"; remove.onclick = () => deleteVisitor(visitor);
+                actions.append(edit, remove); row.appendChild(actions); return row;
+            }));
+        }
+        function openModal(visitor = null) {
+            editingVisitorId = visitor ? visitor[0] : null;
+            $("modalTitle").textContent = visitor ? "Edit Visitor Entry" : "Add Visitor Entry";
+            $("studentId").value = visitor?.[1] ?? "";
+            $("visitorName").value = visitor?.[4] ?? "";
+            $("relationship").value = visitor?.[5] ?? "";
+            $("phone").value = visitor?.[6] ?? "";
+            $("visitDate").value = visitor?.[7] ?? today();
+            $("inTime").value = visitor?.[8] ?? "";
+            $("outTime").value = visitor?.[9] ?? "";
+            $("purpose").value = visitor?.[10] ?? "";
+            $("visitorModal").style.display = "flex";
+        }
+        function closeModal() { $("visitorModal").style.display = "none"; $("visitorForm").reset(); editingVisitorId = null; }
+        function showMessage(message, type) { const box = $("message"); box.textContent = message; box.className = `message ${type}`; box.style.display = "block"; clearTimeout(showMessage.timer); showMessage.timer = setTimeout(() => box.style.display = "none", 4500); }
+        $("visitorForm").addEventListener("submit", async event => {
+            event.preventDefault();
+            const id = editingVisitorId;
+            const payload = { student_id: Number($("studentId").value), visitor_name: $("visitorName").value.trim(), relationship: $("relationship").value.trim(), phone: $("phone").value.trim(), visit_date: $("visitDate").value, in_time: $("inTime").value.trim(), out_time: $("outTime").value.trim(), purpose: $("purpose").value.trim() };
+            try {
+                const response = await fetch(id ? `/api/visitors/${id}` : "/api/visitors", { method: id ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not save visitor entry.");
+                closeModal(); await loadVisitors(); showMessage(id ? "Visitor entry updated." : "Visitor entry added.", "success");
+            } catch (error) { showMessage(error.message, "error"); }
+        });
+        async function deleteVisitor(visitor) {
+            if (!confirm(`Delete the visitor entry for ${visitor[4]} visiting ${visitor[3]}?`)) return;
+            try {
+                const response = await fetch(`/api/visitors/${visitor[0]}`, { method: "DELETE" });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not delete visitor entry.");
+                await loadVisitors(); showMessage("Visitor entry deleted.", "success");
+            } catch (error) { showMessage(error.message, "error"); }
+        }
+        $("addButton").addEventListener("click", () => openModal());
+        $("closeButton").addEventListener("click", closeModal);
+        $("cancelButton").addEventListener("click", closeModal);
+        $("searchInput").addEventListener("input", renderVisitors);
+        $("dateFilter").addEventListener("change", renderVisitors);
+        $("visitorModal").addEventListener("click", event => { if (event.target === $("visitorModal")) closeModal(); });
+        window.addEventListener("keydown", event => { if (event.key === "Escape") closeModal(); });
+        (async () => { try { await loadStudents(); await loadVisitors(); } catch (error) { $("visitorsTable").innerHTML = '<tr><td class="empty" colspan="9">Unable to load students.</td></tr>'; showMessage(error.message, "error"); } })();
+    </script>
+    <script src="/auth.js"></script>
+</body>
+</html>

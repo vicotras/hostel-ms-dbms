@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaints Against Hostellers - Hostel Management</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background: #f5f7fb; color: #1f2937; }
+        .sidebar { position: fixed; inset: 0 auto 0 0; width: 230px; background: #111827; color: white; padding: 25px 15px; overflow-y: auto; }
+        .logo { font-size: 22px; font-weight: bold; margin: 0 0 35px 10px; }
+        .nav-item { display: block; padding: 13px 15px; margin-bottom: 6px; border-radius: 8px; color: #d1d5db; text-decoration: none; }
+        .nav-item:hover, .nav-item.active { background: #ea6a16; color: white; }
+        .main { margin-left: 230px; padding: 35px; }
+        .header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .header h1 { font-size: 28px; } .header p { color: #6b7280; margin-top: 6px; }
+        button { cursor: pointer; border: 0; border-radius: 7px; }
+        .add-btn, .save-btn { background: #ea6a16; color: white; padding: 12px 18px; font-weight: bold; white-space: nowrap; }
+        .legend { display: flex; flex-wrap: wrap; gap: 10px 20px; padding: 15px 18px; border-radius: 10px; background: white; color: #4b5563; margin-bottom: 12px; box-shadow: 0 2px 8px #0000000d; }
+        .legend-item { display: flex; align-items: center; gap: 7px; font-size: 13px; }
+        .dot { width: 11px; height: 11px; border-radius: 50%; }
+        .green-dot { background: #16a34a; } .yellow-dot { background: #eab308; } .red-dot { background: #dc2626; }
+        .note { color: #6b7280; font-size: 13px; line-height: 1.45; margin: 0 0 17px 2px; }
+        .filters { display: flex; gap: 12px; background: white; padding: 16px; border-radius: 12px; margin-bottom: 18px; box-shadow: 0 2px 8px #0000000d; }
+        .filters input, .filters select { flex: 1; min-width: 0; padding: 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; }
+        .summary { display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); gap: 14px; margin-bottom: 18px; }
+        .summary-card { background: white; padding: 17px 19px; border-radius: 11px; box-shadow: 0 2px 8px #0000000d; }
+        .summary-label { color: #6b7280; font-size: 13px; margin-bottom: 7px; } .summary-value { font-size: 25px; font-weight: bold; }
+        .table-wrap { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 2px 8px #0000000d; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th, td { text-align: left; vertical-align: middle; padding: 14px; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f9fafb; color: #6b7280; font-size: 13px; white-space: nowrap; }
+        .zone { display: inline-block; padding: 6px 10px; border-radius: 20px; font-weight: bold; font-size: 12px; white-space: nowrap; }
+        .zone-green { background: #dcfce7; color: #166534; } .zone-yellow { background: #fef3c7; color: #92400e; } .zone-red { background: #fee2e2; color: #991b1b; }
+        .view-btn { background: #ffeddc; color: #9a4310; padding: 8px 11px; }
+        .details-row td { background: #fbfcff; vertical-align: top; }
+        .history { display: grid; gap: 10px; }
+        .history-item { border: 1px solid #e5e7eb; border-radius: 8px; background: white; padding: 13px 14px; }
+        .history-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+        .history-description { color: #4b5563; white-space: pre-wrap; line-height: 1.45; }
+        .report-source { display: inline-block; border-radius: 999px; padding: 4px 8px; background: #ffeddc; color: #9a4310; font-size: 11px; font-weight: bold; }
+        .report-message { margin-top: 10px; padding: 12px 14px; border: 1px solid #fed7aa; border-left: 4px solid #ea6a16; border-radius: 8px; background: #fff8f0; }
+        .report-message-label { display: block; margin-bottom: 6px; color: #9a4310; font-size: 12px; font-weight: bold; }
+        .history-resolution { color: #166534; margin-top: 7px; white-space: pre-wrap; }
+        .status { display: inline-block; padding: 5px 9px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .status-PENDING { background: #fef3c7; color: #92400e; } .status-IN_PROGRESS { background: #ffeddc; color: #c94f08; } .status-RESOLVED { background: #dcfce7; color: #166534; } .status-DISMISSED { background: #e5e7eb; color: #4b5563; }
+        .action { padding: 7px 10px; margin: 0 5px 5px 0; } .edit { background: #ffeddc; color: #9a4310; } .delete { background: #fee2e2; color: #b91c1c; }
+        .empty { text-align: center; color: #6b7280; padding: 36px; }
+        .message { display: none; padding: 12px 15px; border-radius: 8px; margin-bottom: 18px; }
+        .success { background: #dcfce7; color: #166534; } .error { background: #fee2e2; color: #991b1b; }
+        .modal { display: none; position: fixed; inset: 0; z-index: 5; background: #0008; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+        .modal-card { width: 600px; max-width: 100%; padding: 26px; border-radius: 14px; background: white; margin: auto; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; } .close { background: transparent; font-size: 27px; color: #6b7280; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+        .form-group { margin-bottom: 16px; } .form-group.wide { grid-column: 1 / -1; }
+        label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; background: white; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; } .cancel-btn { background: #e5e7eb; padding: 11px 17px; }
+        @media (max-width: 800px) { .sidebar { width: 70px; padding: 20px 8px; } .logo { font-size: 0; margin-left: 0; } .nav-item { font-size: 0; padding: 13px 5px; text-align: center; } .nav-item::first-letter { font-size: 18px; } .main { margin-left: 70px; padding: 20px 14px; } .header { align-items: flex-start; flex-direction: column; } .summary { grid-template-columns: repeat(2, 1fr); } .filters { flex-direction: column; } }
+        @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } .form-group.wide { grid-column: auto; } }
+    </style>
+    <link rel="stylesheet" href="/sidebar.css">
+    <link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+        <aside class="sidebar" aria-label="Main navigation">
+        <a class="sidebar-brand" href="/" aria-label="HostelMS home"><span class="brand-mark" aria-hidden="true">H</span><span>HostelMS</span></a>
+        <nav class="sidebar-nav" aria-label="Pages">
+        <a class="nav-item" href="/" title="Dashboard"><span class="sidebar-label">Dashboard</span></a>
+        <a class="nav-item" href="/students.html" title="Students"><span class="sidebar-label">Students</span></a>
+        <a class="nav-item" href="/rooms.html" title="Rooms"><span class="sidebar-label">Rooms</span></a>
+        <a class="nav-item" href="/room-allocations.html" title="Room Allocations"><span class="sidebar-label">Room Allocations</span></a>
+        <a class="nav-item" href="/hostels.html" title="Hostels"><span class="sidebar-label">Hostels</span></a>
+        <a class="nav-item" href="/complaints.html" title="Hostel Issues"><span class="sidebar-label">Hostel Issues</span></a>
+        <a class="nav-item active" href="/complaint-zones.html" title="Against Hostellers" aria-current="page"><span class="sidebar-label">Against Hostellers</span></a>
+        <a class="nav-item" href="/leave-requests.html" title="Leave Requests"><span class="sidebar-label">Leave Requests</span></a>
+        <a class="nav-item" href="/visitors.html" title="Visitors"><span class="sidebar-label">Visitors</span></a>
+        </nav>
+    </aside>
+    <main class="main">
+        <header class="header"><div><h1>Complaints Against Hostellers</h1><p>Record reports against a resident and review their complaint history.</p></div><button class="add-btn" id="addButton">+ Add Report</button></header>
+        <div class="legend">
+            <div class="legend-item"><span class="dot green-dot"></span><strong>Green:</strong> 0–1</div>
+            <div class="legend-item"><span class="dot yellow-dot"></span><strong>Yellow:</strong> 2–3</div>
+            <div class="legend-item"><span class="dot red-dot"></span><strong>Red:</strong> 4+</div>
+        </div>
+        <p class="note">Zones count reports that are pending, in progress, or resolved; dismissed reports are excluded. A color is only a count of reports, not a finding that a student did anything wrong.</p>
+        <div id="message" class="message" role="status"></div>
+        <section class="summary" aria-label="Student report counts by zone">
+            <div class="summary-card"><div class="summary-label">Hostellers</div><div class="summary-value" id="studentCount">—</div></div>
+            <div class="summary-card"><div class="summary-label">Green zone</div><div class="summary-value" id="greenCount">—</div></div>
+            <div class="summary-card"><div class="summary-label">Yellow zone</div><div class="summary-value" id="yellowCount">—</div></div>
+            <div class="summary-card"><div class="summary-label">Red zone</div><div class="summary-value" id="redCount">—</div></div>
+        </section>
+        <div class="filters"><input id="searchInput" type="search" placeholder="Search name, registration or department..."><select id="zoneFilter" aria-label="Filter by zone"><option value="">All zones</option><option value="red">Red zone</option><option value="yellow">Yellow zone</option><option value="green">Green zone</option></select><select id="statusFilter" aria-label="Filter reports by status"><option value="">Any report status</option><option value="PENDING">Pending reports</option><option value="IN PROGRESS">In Progress reports</option><option value="RESOLVED">Resolved reports</option><option value="DISMISSED">Dismissed reports</option></select></div>
+        <div class="table-wrap"><table><thead><tr><th>Hosteller</th><th>Registration No.</th><th>Department</th><th>Reports Counted</th><th>Active Reports</th><th>Latest Report</th><th>Zone</th><th>History</th></tr></thead><tbody id="studentsTable"><tr><td class="empty" colspan="8">Loading hostellers...</td></tr></tbody></table></div>
+    </main>
+    <div class="modal" id="reportModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <section class="modal-card"><div class="modal-head"><h2 id="modalTitle">Add Report Against Hosteller</h2><button class="close" id="closeButton" aria-label="Close">&times;</button></div>
+            <form id="reportForm"><div class="form-grid">
+                <div class="form-group wide"><label for="accusedStudentId">Hosteller the complaint is against</label><select id="accusedStudentId" required><option value="">Select hosteller</option></select></div>
+                <div class="form-group"><label for="complaintType">Complaint Type</label><input id="complaintType" list="complaintTypes" maxlength="30" placeholder="Example: Noise" required><datalist id="complaintTypes"><option value="NOISE"><option value="PROPERTY DAMAGE"><option value="RULE VIOLATION"><option value="BULLYING"><option value="SAFETY"><option value="OTHER"></datalist></div>
+                <div class="form-group"><label for="complaintDate">Report Date</label><input id="complaintDate" type="date" required></div>
+                <div class="form-group"><label for="reportedBy">Reported By <span style="font-weight:normal;color:#6b7280">(optional)</span></label><input id="reportedBy" maxlength="100"></div>
+                <div class="form-group"><label for="status">Status</label><select id="status" required><option value="PENDING">Pending</option><option value="IN PROGRESS">In Progress</option><option value="RESOLVED">Resolved</option><option value="DISMISSED">Dismissed</option></select></div>
+                <div class="form-group" id="resolvedDateGroup" hidden><label for="resolvedDate">Resolved Date</label><input id="resolvedDate" type="date"></div>
+                <div class="form-group wide"><label for="description">Details</label><textarea id="description" maxlength="500" required></textarea></div>
+                <div class="form-group wide"><label for="resolution">Resolution or Notes <span style="font-weight:normal;color:#6b7280">(optional)</span></label><textarea id="resolution" maxlength="500"></textarea></div>
+            </div><div class="modal-actions"><button type="button" class="cancel-btn" id="cancelButton">Cancel</button><button class="save-btn" type="submit">Save Report</button></div></form>
+        </section>
+    </div>
+    <script>
+        const RED_ZONE_AT = 4;
+        const YELLOW_ZONE_AT = 2;
+        let students = [];
+        let zones = [];
+        let reports = [];
+        const expandedStudents = new Set();
+        const $ = id => document.getElementById(id);
+        const today = () => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; };
+        const zoneFor = count => count >= RED_ZONE_AT ? "red" : count >= YELLOW_ZONE_AT ? "yellow" : "green";
+        const visibleReportsFor = studentId => reports.filter(report => Number(report[1]) === studentId && (!$("statusFilter").value || report[9] === $("statusFilter").value));
+
+        async function loadStudents() {
+            const response = await fetch("/api/students");
+            if (!response.ok) throw new Error("Unable to load the hosteller list.");
+            students = await response.json();
+            const select = $("accusedStudentId");
+            select.replaceChildren(new Option("Select hosteller", ""));
+            students.forEach(student => select.add(new Option(`${student[2]} (${student[1]})`, student[0])));
+        }
+        async function loadData() {
+            try {
+                const [zoneResponse, reportResponse] = await Promise.all([fetch("/api/complaint-zones"), fetch("/api/student-complaints")]);
+                const [zoneResult, reportResult] = await Promise.all([zoneResponse.json(), reportResponse.json()]);
+                if (!zoneResponse.ok) throw new Error(zoneResult.error || "Unable to load student report counts.");
+                if (!reportResponse.ok) throw new Error(reportResult.error || "Unable to load reports.");
+                zones = zoneResult;
+                reports = reportResult;
+                renderStudents();
+            } catch (error) {
+                $("studentsTable").innerHTML = '<tr><td class="empty" colspan="8">Unable to load reports. If this is the first setup, run sql/student_complaints.sql and refresh.</td></tr>';
+                showMessage(error.message, "error");
+            }
+        }
+        function renderStudents() {
+            const summaries = zones.map(zone => ({ zone, level: zoneFor(Number(zone[4])) }));
+            $("studentCount").textContent = zones.length;
+            $("greenCount").textContent = summaries.filter(item => item.level === "green").length;
+            $("yellowCount").textContent = summaries.filter(item => item.level === "yellow").length;
+            $("redCount").textContent = summaries.filter(item => item.level === "red").length;
+            const query = $("searchInput").value.trim().toLowerCase();
+            const filter = $("zoneFilter").value;
+            const statusFilter = $("statusFilter").value;
+            const filtered = summaries.filter(item => {
+                const studentId = Number(item.zone[0]);
+                const matchesSearch = [item.zone[1], item.zone[2], item.zone[3]].some(value => String(value ?? "").toLowerCase().includes(query));
+                const matchesZone = !filter || item.level === filter;
+                const matchesStatus = !statusFilter || reports.some(report => Number(report[1]) === studentId && report[9] === statusFilter);
+                return matchesSearch && matchesZone && matchesStatus;
+            });
+            const table = $("studentsTable");
+            if (!filtered.length) { table.innerHTML = '<tr><td class="empty" colspan="8">No hostellers match that filter.</td></tr>'; return; }
+            table.replaceChildren(...filtered.flatMap(item => {
+                const zone = item.zone;
+                const studentId = Number(zone[0]);
+                const row = document.createElement("tr");
+                [zone[2], zone[1], zone[3] || "—", zone[4], zone[5], zone[6] || "—"].forEach(value => { const td = document.createElement("td"); td.textContent = value; row.appendChild(td); });
+                const level = item.level[0].toUpperCase() + item.level.slice(1);
+                const zoneCell = document.createElement("td"); const badge = document.createElement("span"); badge.className = `zone zone-${item.level}`; badge.textContent = `${level} zone`; zoneCell.appendChild(badge); row.appendChild(zoneCell);
+                const actionCell = document.createElement("td"); const toggle = document.createElement("button"); toggle.className = "view-btn"; toggle.textContent = expandedStudents.has(studentId) ? "Hide history" : `View (${visibleReportsFor(studentId).length})`; toggle.onclick = () => toggleHistory(studentId); actionCell.appendChild(toggle); row.appendChild(actionCell);
+                const rows = [row];
+                if (expandedStudents.has(studentId)) rows.push(buildHistoryRow(zone));
+                return rows;
+            }));
+        }
+        function buildHistoryRow(zone) {
+            const studentId = Number(zone[0]);
+            const row = document.createElement("tr"); row.className = "details-row";
+            const cell = document.createElement("td"); cell.colSpan = 8;
+            const history = document.createElement("div"); history.className = "history";
+            const heading = document.createElement("strong"); heading.textContent = `Reports against ${zone[2]}`; history.appendChild(heading);
+            const matching = visibleReportsFor(studentId).sort((a, b) => String(b[7]).localeCompare(String(a[7])));
+            if (!matching.length) { const empty = document.createElement("div"); empty.className = "history-item"; empty.textContent = "No reports recorded against this hosteller."; history.appendChild(empty); }
+            matching.forEach(report => {
+                const card = document.createElement("article"); card.className = "history-item";
+                const head = document.createElement("div"); head.className = "history-head";
+                const title = document.createElement("strong"); title.textContent = `${report[5]} · ${report[7]}`; head.appendChild(title);
+                if (Number(report[12]) > 0) { const source = document.createElement("span"); source.className = "report-source"; source.textContent = "Submitted by student"; head.appendChild(source); }
+                if (report[8]) { const reporter = document.createElement("span"); reporter.textContent = `Reported by: ${report[8]}`; head.appendChild(reporter); }
+                const status = document.createElement("span"); status.className = `status status-${String(report[9]).replaceAll(" ", "_")}`; status.textContent = report[9]; head.appendChild(status);
+                card.appendChild(head);
+                const message = document.createElement("div"); message.className = "report-message";
+                const messageLabel = document.createElement("span"); messageLabel.className = "report-message-label"; messageLabel.textContent = "Report message";
+                const details = document.createElement("p"); details.className = "history-description"; details.textContent = report[6]; message.append(messageLabel, details); card.appendChild(message);
+                if (report[10]) { const resolution = document.createElement("p"); resolution.className = "history-resolution"; resolution.textContent = `Resolution / notes: ${report[10]}${report[11] ? ` (${report[11]})` : ""}`; card.appendChild(resolution); }
+                const actions = document.createElement("div"); actions.style.marginTop = "10px";
+                const edit = document.createElement("button"); edit.className = "action edit"; edit.textContent = "Edit"; edit.onclick = () => openModal(report);
+                const remove = document.createElement("button"); remove.className = "action delete"; remove.textContent = "Delete"; remove.onclick = () => deleteReport(report);
+                actions.append(edit, remove); card.appendChild(actions); history.appendChild(card);
+            });
+            cell.appendChild(history); row.appendChild(cell); return row;
+        }
+        function toggleHistory(studentId) { if (expandedStudents.has(studentId)) expandedStudents.delete(studentId); else expandedStudents.add(studentId); renderStudents(); }
+        function updateResolvedDate() { const resolved = $("status").value === "RESOLVED"; $("resolvedDateGroup").hidden = !resolved; if (resolved && !$("resolvedDate").value) $("resolvedDate").value = today(); }
+        function openModal(report = null, presetStudentId = "") {
+            $("modalTitle").textContent = report ? "Edit Report Against Hosteller" : "Add Report Against Hosteller";
+            $("accusedStudentId").value = report?.[1] ?? presetStudentId;
+            $("complaintType").value = report?.[5] ?? "";
+            $("complaintDate").value = report?.[7] ?? today();
+            $("reportedBy").value = report?.[8] ?? "";
+            $("status").value = report?.[9] ?? "PENDING";
+            $("description").value = report?.[6] ?? "";
+            $("resolution").value = report?.[10] ?? "";
+            $("resolvedDate").value = report?.[11] ?? "";
+            $("reportModal").dataset.complaintId = report?.[0] ?? "";
+            updateResolvedDate();
+            $("reportModal").style.display = "flex";
+        }
+        function closeModal() { $("reportModal").style.display = "none"; $("reportForm").reset(); $("reportModal").dataset.complaintId = ""; $("resolvedDateGroup").hidden = true; }
+        function showMessage(message, type) { const box = $("message"); box.textContent = message; box.className = `message ${type}`; box.style.display = "block"; clearTimeout(showMessage.timer); showMessage.timer = setTimeout(() => box.style.display = "none", 5000); }
+        $("reportForm").addEventListener("submit", async event => {
+            event.preventDefault();
+            const id = $("reportModal").dataset.complaintId;
+            const payload = { accused_student_id: Number($("accusedStudentId").value), complaint_type: $("complaintType").value.trim(), description: $("description").value.trim(), complaint_date: $("complaintDate").value, reported_by: $("reportedBy").value.trim(), status: $("status").value, resolution: $("resolution").value.trim(), resolved_date: $("resolvedDate").value };
+            try {
+                const response = await fetch(id ? `/api/student-complaints/${id}` : "/api/student-complaints", { method: id ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not save report.");
+                const accusedId = payload.accused_student_id;
+                closeModal(); expandedStudents.add(accusedId); await loadData();
+                showMessage(id ? "Report updated." : "Report added.", "success");
+            } catch (error) { showMessage(error.message, "error"); }
+        });
+        async function deleteReport(report) {
+            if (!confirm(`Delete this report against ${report[3]}?`)) return;
+            try {
+                const response = await fetch(`/api/student-complaints/${report[0]}`, { method: "DELETE" });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not delete report.");
+                await loadData(); showMessage("Report deleted.", "success");
+            } catch (error) { showMessage(error.message, "error"); }
+        }
+        $("addButton").addEventListener("click", () => openModal());
+        $("closeButton").addEventListener("click", closeModal);
+        $("cancelButton").addEventListener("click", closeModal);
+        $("status").addEventListener("change", updateResolvedDate);
+        $("searchInput").addEventListener("input", renderStudents);
+        $("zoneFilter").addEventListener("change", renderStudents);
+        $("statusFilter").addEventListener("change", renderStudents);
+        $("reportModal").addEventListener("click", event => { if (event.target === $("reportModal")) closeModal(); });
+        window.addEventListener("keydown", event => { if (event.key === "Escape") closeModal(); });
+        (async () => { try { await loadStudents(); await loadData(); } catch (error) { $("studentsTable").innerHTML = '<tr><td class="empty" colspan="8">Unable to load students.</td></tr>'; showMessage(error.message, "error"); } })();
+    </script>
+    <script src="/auth.js"></script>
+</body>
+</html>

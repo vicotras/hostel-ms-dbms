@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostels - Hostel Management</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background: #f5f7fb; color: #1f2937; }
+        .sidebar { position: fixed; inset: 0 auto 0 0; width: 230px; background: #111827; color: white; padding: 25px 15px; }
+        .logo { font-size: 22px; font-weight: bold; margin: 0 0 35px 10px; }
+        .nav-item { display: block; padding: 13px 15px; margin-bottom: 6px; border-radius: 8px; color: #d1d5db; text-decoration: none; }
+        .nav-item:hover, .nav-item.active { background: #ea6a16; color: white; }
+        .main { margin-left: 230px; padding: 35px; }
+        .header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 24px; }
+        .header h1 { font-size: 28px; }
+        .header p { color: #6b7280; margin-top: 5px; }
+        button { cursor: pointer; border: 0; border-radius: 7px; }
+        .add-btn, .save-btn { background: #ea6a16; color: white; padding: 12px 18px; font-weight: bold; }
+        .search { background: white; padding: 16px; border-radius: 12px; margin-bottom: 18px; box-shadow: 0 2px 8px #0000000d; }
+        .search input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; }
+        .table-wrap { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 2px 8px #0000000d; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th, td { text-align: left; padding: 15px; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f9fafb; color: #6b7280; font-size: 13px; }
+        .action { padding: 7px 11px; margin-right: 5px; }
+        .edit { background: #ffeddc; color: #9a4310; } .delete { background: #fee2e2; color: #b91c1c; }
+        .empty { text-align: center; color: #6b7280; padding: 36px; }
+        .message { display: none; padding: 12px 15px; border-radius: 8px; margin-bottom: 18px; }
+        .success { background: #dcfce7; color: #166534; } .error { background: #fee2e2; color: #991b1b; }
+        .modal { display: none; position: fixed; inset: 0; z-index: 5; background: #0008; align-items: center; justify-content: center; padding: 20px; }
+        .modal-card { width: 480px; max-width: 100%; padding: 26px; border-radius: 14px; background: white; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+        .close { background: transparent; font-size: 27px; color: #6b7280; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 14px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+        .cancel-btn { background: #e5e7eb; padding: 11px 17px; }
+        @media (max-width: 700px) { .sidebar { width: 70px; padding: 20px 8px; } .logo { font-size: 0; margin-left: 0; } .nav-item { font-size: 0; padding: 13px 5px; text-align: center; } .nav-item::first-letter { font-size: 18px; } .main { margin-left: 70px; padding: 20px 14px; } .header { align-items: flex-start; flex-direction: column; } }
+    </style>
+    <link rel="stylesheet" href="/sidebar.css">
+    <link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+        <aside class="sidebar" aria-label="Main navigation">
+        <a class="sidebar-brand" href="/" aria-label="HostelMS home"><span class="brand-mark" aria-hidden="true">H</span><span>HostelMS</span></a>
+        <nav class="sidebar-nav" aria-label="Pages">
+        <a class="nav-item" href="/" title="Dashboard"><span class="sidebar-label">Dashboard</span></a>
+        <a class="nav-item" href="/students.html" title="Students"><span class="sidebar-label">Students</span></a>
+        <a class="nav-item" href="/rooms.html" title="Rooms"><span class="sidebar-label">Rooms</span></a>
+        <a class="nav-item" href="/room-allocations.html" title="Room Allocations"><span class="sidebar-label">Room Allocations</span></a>
+        <a class="nav-item active" href="/hostels.html" title="Hostels" aria-current="page"><span class="sidebar-label">Hostels</span></a>
+        <a class="nav-item" href="/complaints.html" title="Hostel Issues"><span class="sidebar-label">Hostel Issues</span></a>
+        <a class="nav-item" href="/complaint-zones.html" title="Against Hostellers"><span class="sidebar-label">Against Hostellers</span></a>
+        <a class="nav-item" href="/leave-requests.html" title="Leave Requests"><span class="sidebar-label">Leave Requests</span></a>
+        <a class="nav-item" href="/visitors.html" title="Visitors"><span class="sidebar-label">Visitors</span></a>
+        </nav>
+    </aside>
+    <main class="main">
+        <header class="header"><div><h1>Hostels</h1><p>Manage hostel buildings and their capacity</p></div><button class="add-btn" id="addButton">+ Add Hostel</button></header>
+        <div id="message" class="message" role="status"></div>
+        <div class="search"><input id="searchInput" type="search" placeholder="Search by name, type or location..."></div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Hostel</th><th>Type</th><th>Capacity</th><th>Location</th><th>Actions</th></tr></thead><tbody id="hostelsTable"><tr><td class="empty" colspan="6">Loading hostels...</td></tr></tbody></table></div>
+    </main>
+    <div class="modal" id="hostelModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <section class="modal-card"><div class="modal-head"><h2 id="modalTitle">Add Hostel</h2><button class="close" id="closeButton" aria-label="Close">&times;</button></div>
+            <form id="hostelForm"><input type="hidden" id="hostelId">
+                <div class="form-group"><label for="hostelName">Hostel Name</label><input id="hostelName" required maxlength="50"></div>
+                <div class="form-group"><label for="hostelType">Hostel Type</label><select id="hostelType" required><option value="">Select type</option><option value="BOYS">Boys</option><option value="GIRLS">Girls</option></select></div>
+                <div class="form-group"><label for="capacity">Capacity</label><input id="capacity" type="number" min="1" step="1" required></div>
+                <div class="form-group"><label for="location">Location <span style="font-weight: normal; color: #6b7280">(optional)</span></label><input id="location" maxlength="100"></div>
+                <div class="modal-actions"><button type="button" class="cancel-btn" id="cancelButton">Cancel</button><button class="save-btn" type="submit">Save Hostel</button></div>
+            </form>
+        </section>
+    </div>
+    <script>
+        let hostels = [];
+        let editingId = null;
+        const $ = id => document.getElementById(id);
+
+        async function loadHostels() {
+            const table = $("hostelsTable");
+            try {
+                const response = await fetch("/api/hostels");
+                if (!response.ok) throw new Error("Unable to load hostels.");
+                hostels = await response.json();
+                renderHostels();
+            } catch (error) {
+                table.innerHTML = '<tr><td class="empty" colspan="6">Unable to load hostels. Check that the server and database are running.</td></tr>';
+                showMessage(error.message, "error");
+            }
+        }
+
+        function renderHostels() {
+            const query = $("searchInput").value.trim().toLowerCase();
+            const filtered = hostels.filter(h => h.some(value => String(value ?? "").toLowerCase().includes(query)));
+            const table = $("hostelsTable");
+            if (!filtered.length) {
+                table.innerHTML = `<tr><td class="empty" colspan="6">${hostels.length ? "No matching hostels." : "No hostels have been added yet."}</td></tr>`;
+                return;
+            }
+            table.replaceChildren(...filtered.map(hostel => {
+                const row = document.createElement("tr");
+                hostel.forEach((value, index) => {
+                    const cell = document.createElement("td");
+                    cell.textContent = value ?? "-";
+                    if (index === 1) cell.innerHTML = `<strong>${escapeHtml(value ?? "")}</strong>`;
+                    row.appendChild(cell);
+                });
+                const actions = document.createElement("td");
+                const edit = document.createElement("button"); edit.className = "action edit"; edit.textContent = "Edit"; edit.onclick = () => openModal(hostel);
+                const remove = document.createElement("button"); remove.className = "action delete"; remove.textContent = "Delete"; remove.onclick = () => deleteHostel(hostel);
+                actions.append(edit, remove); row.appendChild(actions); return row;
+            }));
+        }
+
+        function escapeHtml(value) { return String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]); }
+        function openModal(hostel = null) {
+            editingId = hostel ? hostel[0] : null;
+            $("modalTitle").textContent = hostel ? "Edit Hostel" : "Add Hostel";
+            $("hostelId").value = editingId ?? "";
+            $("hostelName").value = hostel?.[1] ?? "";
+            $("hostelType").value = hostel?.[2] ?? "";
+            $("capacity").value = hostel?.[3] ?? "";
+            $("location").value = hostel?.[4] ?? "";
+            $("hostelModal").style.display = "flex";
+            $("hostelName").focus();
+        }
+        function closeModal() { $("hostelModal").style.display = "none"; $("hostelForm").reset(); editingId = null; }
+        function showMessage(message, type) { const box = $("message"); box.textContent = message; box.className = `message ${type}`; box.style.display = "block"; clearTimeout(showMessage.timer); showMessage.timer = setTimeout(() => box.style.display = "none", 4000); }
+
+        $("hostelForm").addEventListener("submit", async event => {
+            event.preventDefault();
+            const id = editingId;
+            const payload = { hostel_name: $("hostelName").value.trim(), hostel_type: $("hostelType").value.trim(), capacity: Number($("capacity").value), location: $("location").value.trim() };
+            try {
+                const response = await fetch(id ? `/api/hostels/${id}` : "/api/hostels", { method: id ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not save hostel.");
+                closeModal(); await loadHostels(); showMessage(id ? "Hostel updated successfully." : "Hostel added successfully.", "success");
+            } catch (error) { showMessage(error.message, "error"); }
+        });
+        async function deleteHostel(hostel) {
+            if (!confirm(`Delete ${hostel[1]}? Hostels with rooms cannot be deleted.`)) return;
+            try {
+                const response = await fetch(`/api/hostels/${hostel[0]}`, { method: "DELETE" });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not delete hostel.");
+                await loadHostels(); showMessage("Hostel deleted successfully.", "success");
+            } catch (error) { showMessage(error.message, "error"); }
+        }
+        $("addButton").addEventListener("click", () => openModal());
+        $("closeButton").addEventListener("click", closeModal);
+        $("cancelButton").addEventListener("click", closeModal);
+        $("searchInput").addEventListener("input", renderHostels);
+        $("hostelModal").addEventListener("click", event => { if (event.target === $("hostelModal")) closeModal(); });
+        window.addEventListener("keydown", event => { if (event.key === "Escape") closeModal(); });
+        loadHostels();
+    </script>
+    <script src="/auth.js"></script>
+</body>
+</html>

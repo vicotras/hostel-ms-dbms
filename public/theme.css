@@ -1,0 +1,402 @@
+/* Shared HostelMS orange theme */
+:root {
+    color-scheme: light;
+    --brand: #ea6a16;
+    --brand-strong: #c94f08;
+    --brand-soft: #ffeddc;
+    --ink: #29231f;
+    --muted: #74685f;
+    --page: #fffaf5;
+    --surface: #ffffff;
+    --line: #eee3d9;
+}
+
+html,
+body,
+body * {
+    font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif !important;
+}
+
+body {
+    color: var(--ink) !important;
+    background: var(--page) !important;
+}
+
+body .sidebar {
+    background: #24180f !important;
+    color: #fffaf5 !important;
+    box-shadow: 3px 0 18px #39200f18 !important;
+}
+
+body .sidebar-brand {
+    color: #fffaf5 !important;
+    font-weight: 700 !important;
+    letter-spacing: -.035em !important;
+}
+
+body .sidebar-brand .brand-mark {
+    display: inline-flex !important;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: var(--brand);
+    color: #fff !important;
+    font-size: 17px !important;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+body .sidebar .nav-item {
+    gap: 0 !important;
+    color: #e7d8cc !important;
+    font-weight: 500 !important;
+}
+
+body .sidebar .nav-item:hover,
+body .sidebar .nav-item.active,
+body .sidebar .nav-item.active:hover {
+    background: var(--brand) !important;
+    color: #fff !important;
+}
+
+body .sidebar .nav-item:hover:not(.active) {
+    background: #3b291c !important;
+}
+
+body .main,
+body main,
+body .page-content {
+    color: var(--ink);
+}
+
+body h1,
+body h2,
+body h3,
+body .page-title {
+    color: #33251b;
+    letter-spacing: -.025em;
+}
+
+body p,
+body .muted,
+body .subtitle,
+body .header p {
+    color: var(--muted);
+}
+
+body .brand {
+    color: var(--brand-strong) !important;
+}
+
+body .hero {
+    background: linear-gradient(125deg, #c94f08, #f28a35) !important;
+    box-shadow: 0 12px 28px #c94f0820 !important;
+}
+
+body .summary-card,
+body .panel,
+body .table-wrap,
+body .filters,
+body .card,
+body .modal-card,
+body .modal-content,
+body .profile-content,
+body .profile-stat,
+body .profile-section {
+    border-color: var(--line) !important;
+    box-shadow: 0 5px 18px #5b32100a !important;
+}
+
+body .summary-card,
+body .panel,
+body .table-wrap,
+body .filters,
+body .card,
+body .modal-card,
+body .modal-content,
+body .profile-content {
+    background-color: var(--surface) !important;
+}
+
+body th {
+    background: #fff3e7 !important;
+    color: #75401e !important;
+}
+
+body tr:hover td {
+    background-color: #fffaf5;
+}
+
+body a:not(.nav-item):not(.sidebar-brand) {
+    color: var(--brand-strong);
+}
+
+body .room-link,
+body .student-profile-link {
+    color: #40352d !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+body .room-link:hover,
+body .student-profile-link:hover {
+    color: var(--brand-strong) !important;
+    background: transparent !important;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+body .add-btn,
+body .save-btn,
+body .primary,
+body button[type="submit"]:not(.cancel-btn):not(.auth-logout) {
+    border-color: var(--brand) !important;
+    background: var(--brand) !important;
+    color: #fff !important;
+    transition: background-color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+
+body .add-btn:hover,
+body .save-btn:hover,
+body .primary:hover,
+body button[type="submit"]:not(.cancel-btn):not(.auth-logout):hover {
+    background: var(--brand-strong) !important;
+    box-shadow: 0 5px 14px #c94f0822;
+}
+
+body .action.edit,
+body .view-btn,
+body .review-btn,
+body .edit-btn,
+body .action-btn:not(.delete-btn),
+body .suggestion-button {
+    border: 1px solid #e8ddd3 !important;
+    background: #fff !important;
+    color: #55463b !important;
+}
+
+body .action.edit:hover,
+body .view-btn:hover,
+body .review-btn:hover,
+body .edit-btn:hover,
+body .action-btn:not(.delete-btn):hover,
+body .suggestion-button:hover {
+    border-color: #f3c69f !important;
+    background: #fff8f0 !important;
+    color: #9a4310 !important;
+}
+
+body .report-source {
+    border: 1px solid #f3c69f !important;
+    background: var(--brand-soft) !important;
+    color: #9a4310 !important;
+}
+
+body .auth-bar {
+    color: #fffaf5;
+    font-size: 13px;
+}
+
+body .sidebar .sidebar-account {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: auto;
+    padding: 12px 10px;
+    border: 1px solid #4a3424;
+    border-radius: 12px;
+    background: #302116;
+}
+
+body .sidebar-account .auth-username {
+    min-width: 0;
+    overflow: hidden;
+    color: #fffaf5;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body .sidebar-account .auth-role {
+    border-radius: 999px;
+    background: #4b2b16;
+    color: #ffd1a8;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    padding: 4px 7px;
+}
+
+body .sidebar-account .auth-logout {
+    grid-column: 1 / -1;
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #e97422 !important;
+    border-radius: 8px;
+    background: var(--brand) !important;
+    color: #fff !important;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+body .sidebar-account .auth-logout:hover {
+    background: var(--brand-strong) !important;
+}
+
+body .auth-floating {
+    position: fixed;
+    top: 10px;
+    right: 14px;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px 8px 13px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 2px 8px #00000012;
+    color: var(--ink);
+}
+
+body .auth-floating .auth-username {
+    color: var(--ink);
+}
+
+body .auth-floating .auth-role {
+    border-radius: 999px;
+    background: var(--brand-soft);
+    color: var(--brand-strong);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 7px;
+}
+
+body .auth-floating .auth-logout {
+    padding: 6px 9px;
+    border: 0 !important;
+    border-radius: 999px;
+    background: #f5eee8 !important;
+    color: #514338 !important;
+    cursor: pointer;
+}
+
+body .auth-floating .auth-logout:hover {
+    background: var(--brand-soft) !important;
+    color: var(--brand-strong) !important;
+}
+
+body .delete,
+body .action.delete,
+body .delete-btn,
+body .action-btn.delete-btn {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+}
+
+body input:focus,
+body select:focus,
+body textarea:focus {
+    border-color: var(--brand) !important;
+    outline: 3px solid #f9731624 !important;
+}
+
+body .report-message {
+    border-color: #f6c99f !important;
+    border-left-color: var(--brand) !important;
+    background: #fff8f0 !important;
+}
+
+body .report-message-label {
+    color: #9a4310 !important;
+}
+
+body .status,
+body .zone {
+    letter-spacing: .01em;
+}
+
+/* Keep every text label usable on touch screens now that sidebar icons are gone. */
+@media (max-width: 800px) {
+    body .sidebar {
+        width: 165px !important;
+        padding: 16px 8px !important;
+    }
+
+    body .sidebar-brand {
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        margin: 0 2px 18px !important;
+        padding: 0 4px !important;
+    }
+
+    body .sidebar-brand > span:last-child {
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+        clip: auto !important;
+        white-space: nowrap !important;
+    }
+
+    body .sidebar .nav-item {
+        justify-content: flex-start !important;
+        min-height: 40px !important;
+        padding: 8px 9px !important;
+        font-size: 12px !important;
+        text-align: left !important;
+        white-space: normal !important;
+    }
+
+    body .sidebar-label {
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+        clip: auto !important;
+        white-space: normal !important;
+    }
+
+    body .main {
+        margin-left: 165px !important;
+        padding: 20px 12px !important;
+    }
+
+    body .sidebar-account {
+        gap: 7px;
+        padding: 10px 7px;
+    }
+
+    body .sidebar-account .auth-username {
+        font-size: 11px;
+    }
+
+    body .sidebar-account .auth-role {
+        font-size: 9px;
+        padding: 3px 5px;
+    }
+
+    body .auth-floating {
+        top: 6px;
+        right: 7px;
+        gap: 6px;
+        padding: 5px 7px 5px 9px;
+        font-size: 11px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
+}

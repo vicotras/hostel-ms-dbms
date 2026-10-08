@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Hostel Management</title>
+    <style>
+        * { box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 20px; background: #f5f7fb; color: #1f2937; }
+        .card { width: 420px; max-width: 100%; background: white; padding: 34px; border-radius: 16px; box-shadow: 0 8px 35px #11182714; }
+        .brand { color: #ea6a16; font-size: 13px; font-weight: bold; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
+        h1 { font-size: 27px; margin: 0 0 8px; } .subtitle { color: #6b7280; margin: 0 0 26px; line-height: 1.45; }
+        .field { margin-bottom: 17px; } label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 7px; }
+        input { width: 100%; padding: 12px 13px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; }
+        input:focus { outline: 2px solid #fed7aa; border-color: #ea6a16; }
+        button { width: 100%; padding: 13px; border: 0; border-radius: 8px; background: #ea6a16; color: white; font-weight: bold; font-size: 15px; cursor: pointer; }
+        button:disabled { opacity: .65; cursor: wait; }
+        .message { display: none; margin: 0 0 16px; padding: 11px 12px; border-radius: 8px; background: #fee2e2; color: #991b1b; font-size: 14px; }
+        .hint { color: #6b7280; font-size: 12px; margin-top: 18px; text-align: center; }
+    </style>
+    <link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+    <main class="card">
+        <div class="brand">Hostel Management</div>
+        <h1>Welcome back</h1>
+        <p class="subtitle">Sign in with your Admin, Warden, or Student account.</p>
+        <div class="message" id="message" role="alert"></div>
+        <form id="loginForm">
+            <div class="field"><label for="username">Username</label><input id="username" name="username" autocomplete="username" required minlength="3" maxlength="50"></div>
+            <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256"></div>
+            <button id="submitButton" type="submit">Sign In</button>
+        </form>
+        <p class="hint">Use the username and password provided for your account.</p>
+    </main>
+    <script>
+        const form = document.getElementById("loginForm");
+        const message = document.getElementById("message");
+        const submit = document.getElementById("submitButton");
+        fetch("/api/auth/me").then(response => { if (response.ok) window.location.replace("/"); }).catch(() => {});
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+            submit.disabled = true;
+            message.style.display = "none";
+            try {
+                const response = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: document.getElementById("username").value.trim(), password: document.getElementById("password").value }) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Unable to sign in.");
+                window.location.replace("/");
+            } catch (error) {
+                message.textContent = error.message;
+                message.style.display = "block";
+            } finally { submit.disabled = false; }
+        });
+    </script>
+</body>
+</html>
