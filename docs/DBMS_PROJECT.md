@@ -26,6 +26,8 @@ flowchart LR
 
 ## Main entities
 
+For every column's Oracle data type, nullability, key, and constraint, see the [complete database schema reference](DATABASE_SCHEMA.md).
+
 | Table | Purpose | Key relationship |
 |---|---|---|
 | `HOSTEL` | Hostel blocks and their identifying details | Parent of `ROOM` |
