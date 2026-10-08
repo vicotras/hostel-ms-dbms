@@ -9,17 +9,17 @@ The **database is the source of truth**. The pages submit requests to the server
 ## ER diagram (logical relationships)
 
 ```mermaid
-erDiagram
-    HOSTEL ||--o{ ROOM : contains
-    HOSTEL ||--o{ WARDEN : assigned_to
-    STUDENT ||--o{ ROOM_ALLOCATION : receives
-    ROOM ||--o{ ROOM_ALLOCATION : assigned_in
-    STUDENT ||--o{ COMPLAINT : reports
-    STUDENT ||--o{ LEAVE_REQUEST : requests
-    STUDENT ||--o{ VISITOR : registers
-    STUDENT o|--o| APP_ACCOUNT : may_have_student_login
-    STUDENT ||--o{ STUDENT_COMPLAINT : is_accused_in
-    STUDENT o|--o{ STUDENT_COMPLAINT : reports
+flowchart LR
+    HOSTEL -->|contains| ROOM
+    HOSTEL -->|assigned to| WARDEN
+    STUDENT -->|has| ROOM_ALLOCATION
+    ROOM -->|assigned in| ROOM_ALLOCATION
+    STUDENT -->|submits| COMPLAINT
+    STUDENT -->|requests| LEAVE_REQUEST
+    STUDENT -->|registers| VISITOR
+    STUDENT -. optional login .-> APP_ACCOUNT
+    STUDENT -->|accused hosteller| STUDENT_COMPLAINT
+    STUDENT -. optional reporter .-> STUDENT_COMPLAINT
 ```
 
 `ROOM_ALLOCATION` resolves the many-to-many relationship between students and rooms over time. A student may have historical allocation rows, while each allocation refers to one student and one room. `STUDENT_COMPLAINT` has two different relationships to `STUDENT`: the accused hosteller is required; the reporting student is optional so staff-entered reports are supported. Admin and warden application accounts do not link to a student row. The exported Oracle DDL confirms that each warden row belongs to a hostel.
