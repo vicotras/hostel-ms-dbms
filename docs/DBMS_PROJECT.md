@@ -147,23 +147,3 @@ GROUP BY s.registration_no, s.student_name
 ORDER BY reports_counted DESC, s.student_name;
 ```
 
-## Recreating the database
-
-The exact table definitions were exported from Oracle into [`../sql/hostel_schema_export.sql`](../sql/hostel_schema_export.sql). A portable copy without the original `SYSTEM` owner prefix is available at [`../sql/create_hostel_schema.sql`](../sql/create_hostel_schema.sql). Run the creation script only in a fresh/empty schema; it creates tables and constraints but does not insert records. For a demo database, run `create_hostel_schema.sql`, then [`../sql/seed_demo_hostels.sql`](../sql/seed_demo_hostels.sql), then [`../sql/reset_students_realistic.sql`](../sql/reset_students_realistic.sql). The last script replaces student-linked data with 100 synthetic students and room allocations, so run it only in the fresh demo schema.
-
-Do not put real passwords or production student contact information in the submission. Use synthetic demo rows and create fresh demo accounts for a presentation.
-
-## Demonstration flow
-
-1. Sign in as admin and show the relational data pages.
-2. Open room allocations and show the student/room join and current capacity.
-3. Sign in as a student and submit a hostel issue, leave request, visitor entry, and (if appropriate for the demo) report against another hosteller.
-4. Sign in as warden/admin and review the pending requests and reports.
-5. Run the example SQL queries in SQL*Plus and explain the primary/foreign-key joins.
-
-## Setup notes to finish before submission
-
-- Include the exported DDL and the ER diagram with the submission.
-- If demonstrating a clean setup, run the three scripts in the order above in a separate empty schema.
-- Include only a small synthetic data set in the report; do not submit real credentials.
-- Confirm that `FEE_PAYMENT` has been dropped if the project is being submitted without the fee feature.
