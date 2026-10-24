@@ -135,7 +135,7 @@ This table stores salted password hashes. It does not store plaintext passwords.
 | `STUDENT_ID` | `NUMBER(10,0)` | Yes | Unique FK → `STUDENT.STUDENT_ID`; required for student accounts and null for admin/warden accounts |
 | `MUST_CHANGE_PASSWORD` | `CHAR(1)` | No | Defaults to `N`; `Y` or `N` |
 
-## Relationships at a glance
+## final glance
 
 - One `HOSTEL` has many `ROOM` and `WARDEN` rows.
 - `ROOM_ALLOCATION` links students and rooms and records allocation history.
@@ -143,4 +143,3 @@ This table stores salted password hashes. It does not store plaintext passwords.
 - A student report has one accused student and may have a reporting student.
 - An `APP_ACCOUNT` may link to one student; admin and warden accounts have no student link.
 
-For the exact Oracle DDL, see [`../sql/create_hostel_schema.sql`](../sql/create_hostel_schema.sql). The schema export from Oracle is in [`../sql/hostel_schema_export.sql`](../sql/hostel_schema_export.sql).
